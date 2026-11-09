@@ -1,0 +1,1361 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>
+:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+body{margin:0;font:14px/1.4 system-ui,-apple-system,"Segoe UI",sans-serif}
+img{max-width:100%}
+[hidden]{display:none!important}
+</style>
+<title>Bookshelf Portfolio</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Bagel+Fat+One&family=Courier+Prime&family=Gochi+Hand&family=Literata:ital,opsz,wght@0,7..72,400;0,7..72,600;0,7..72,700;1,7..72,400&display=swap">
+<style>
+/* Layout: one full-screen room. Wall + shelf on top, a book that opens over it as a 2-page spread. */
+:root{
+  --wall:#FFE45C; --wall-dot:#F7CB1E;
+  --ink:#2A1838; --ink-soft:#5B4A66;
+  --shelf:#2E4BFF;
+  --pink:#FF5FA2; --mint:#3DDBB0; --orange:#FF7A2F;
+  --paper:#FFFBF2; --paper-edge:#EFE6D2; --note:#2E4BFF; --rule:#D7E3F7;
+  --white:#FFFFFF;
+  --f-display:"Bagel Fat One","Arial Black",system-ui,sans-serif;
+  --f-body:"Literata",Georgia,"Times New Roman",serif;
+  --f-hand:"Gochi Hand","Comic Sans MS","Segoe Print",cursive;
+  --f-meme:"Anton",Impact,"Arial Narrow",sans-serif;
+  --f-script:"Courier Prime","Courier New",monospace;
+  color-scheme:light;
+}
+html,body{height:100%;overflow:hidden}
+body{background:var(--wall);color:var(--ink);font-family:var(--f-body);font-size:16px}
+button{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--shelf);outline-offset:3px}
+
+/* ---------- the room ---------- */
+#stage{position:fixed;inset:0;touch-action:none;user-select:none;-webkit-user-select:none;overflow:hidden;
+  background:radial-gradient(var(--wall-dot) 1.7px,transparent 2px) 0 0/24px 24px,var(--wall)}
+.hdr{position:absolute;left:0;right:0;top:0;pointer-events:none;z-index:1;
+  padding-top:max(20px,env(safe-area-inset-top,0px));padding-bottom:8px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.hdr-in{max-width:880px;margin:0 auto;position:relative}
+.hdr h1{font-family:var(--f-display);font-weight:400;font-size:clamp(26px,min(4.6vw,6.2vh),58px);line-height:1;margin:0;max-width:20ch;text-wrap:balance;
+  text-shadow:3px 3px 0 var(--pink)}
+.hdr p{margin:12px 0 0;max-width:46ch;font-size:clamp(14px,1.5vw,17px);line-height:1.45}
+.demo{display:inline-block;font-family:var(--f-hand);font-size:17px;background:var(--white);border:2px solid var(--ink);
+  padding:2px 10px;transform:rotate(-3deg);box-shadow:3px 3px 0 var(--ink)}
+.hdr .demo{position:absolute;right:0;top:4px}
+.kw{pointer-events:auto;cursor:pointer;font:inherit;font-family:var(--f-hand);font-size:17px;color:var(--ink);transition:transform .15s,box-shadow .15s}
+.kw:hover{transform:rotate(0) translate(-1px,-2px);box-shadow:5px 5px 0 var(--ink)}
+.kw:active{transform:rotate(0) translate(2px,2px);box-shadow:1px 1px 0 var(--ink)}
+@media (max-width:700px){.hdr .demo{position:static;margin-top:10px}}
+
+.floor{position:absolute;left:0;right:0;bottom:0;height:18px;background:var(--orange);border-top:3px solid var(--ink)}
+.shelf{position:absolute;left:0;top:0;height:22px;background:var(--shelf);border:3px solid var(--ink);border-radius:6px;
+  box-shadow:0 6px 0 var(--ink);transform-origin:50% 0}
+.shelf::before,.shelf::after{content:"";position:absolute;top:19px;width:16px;height:30px;background:var(--ink);
+  clip-path:polygon(0 0,100% 0,100% 100%)}
+.shelf::before{left:22px;transform:scaleX(-1)}
+.shelf::after{right:22px}
+.shelf.wob{animation:wob .7s cubic-bezier(.3,.6,.4,1)}
+@keyframes wob{0%{transform:var(--base) rotate(0)}15%{transform:var(--base) rotate(-1.6deg) translateY(3px)}35%{transform:var(--base) rotate(1.2deg)}
+  55%{transform:var(--base) rotate(-.7deg)}75%{transform:var(--base) rotate(.35deg)}100%{transform:var(--base) rotate(0)}}
+
+.thing{position:absolute;left:0;top:0;will-change:transform;pointer-events:none}
+.book{border:3px solid var(--ink);border-radius:5px 8px 8px 5px;background:var(--bk);padding:9px 0 7px;
+  display:flex;flex-direction:column;align-items:center;justify-content:space-between;
+  box-shadow:inset 7px 0 0 rgba(255,255,255,.28),inset -7px 0 0 rgba(42,24,56,.14);cursor:pointer}
+.book .band{width:100%;height:12px;border-block:3px solid var(--ink);background:var(--band)}
+.book .t{writing-mode:vertical-rl;transform:rotate(180deg);font-family:var(--f-display);white-space:nowrap;line-height:1;
+}
+.book .yr{font-weight:700;font-size:11px;letter-spacing:.02em;text-align:center;line-height:1.2;white-space:nowrap}
+.book.hov{box-shadow:inset 7px 0 0 rgba(255,255,255,.28),inset -7px 0 0 rgba(42,24,56,.14),0 0 0 4px var(--white)}
+.sign{background:var(--white);border:3px solid var(--ink);border-radius:4px;display:grid;place-content:center;text-align:center;
+  font-family:var(--f-hand);line-height:1.05;padding:4px}
+.sign b{font-weight:400;font-size:19px}
+.sign small{font-size:13px;color:var(--ink-soft)}
+.mug{background:var(--mint);border:3px solid var(--ink);border-radius:3px 3px 12px 12px;display:grid;place-content:center;text-align:center;
+  font-family:var(--f-hand);font-size:11px;line-height:1}
+.mug::after{content:"";position:absolute;right:-17px;top:10px;width:14px;height:22px;border:3px solid var(--ink);border-left:0;border-radius:0 12px 12px 0}
+.ball{border:3px solid var(--ink);border-radius:50%;background:linear-gradient(var(--pink) 0 46%,var(--ink) 46% 54%,var(--white) 54%)}
+.ball.glow{animation:glow 1.8s ease-in-out infinite}
+@keyframes glow{0%,100%{box-shadow:0 0 6px 1px rgba(255,255,255,.7),0 0 0 0 rgba(255,95,162,.35)}50%{box-shadow:0 0 18px 6px rgba(255,255,255,.95),0 0 30px 12px rgba(255,95,162,.45)}}
+@media (prefers-reduced-motion:reduce){.ball.glow{animation:none;box-shadow:0 0 16px 5px rgba(255,255,255,.9)}}
+/* opened ball + contact card */
+.capsule{position:fixed;z-index:25;left:0;top:0;width:44px;height:44px;pointer-events:none}
+.capsule .h{position:absolute;left:0;width:100%;height:50%;border:3px solid var(--ink);box-sizing:border-box}
+.capsule .top{top:0;border-radius:22px 22px 0 0;background:var(--pink);border-bottom-width:2px;transform-origin:0 100%;transition:transform .32s cubic-bezier(.3,1.5,.5,1)}
+.capsule .bot{bottom:0;border-radius:0 0 22px 22px;background:var(--white);border-top-width:2px}
+.capsule.open .top{transform:rotate(-118deg)}
+.capsule .flash{position:absolute;left:50%;top:50%;width:12px;height:12px;margin:-6px;border-radius:50%;background:var(--white);opacity:0}
+.capsule.open .flash{animation:flash .55s ease-out}
+@keyframes flash{0%{opacity:.95;transform:scale(1)}100%{opacity:0;transform:scale(16)}}
+.contact{position:fixed;z-index:26;left:0;top:0;width:min(360px,calc(100vw - 32px));background:var(--paper);border:3px solid var(--ink);border-radius:10px;
+  box-shadow:6px 6px 0 var(--ink);padding:20px 20px 16px;transform-origin:50% 100%}
+.contact .x{position:absolute;top:-14px;right:-14px;width:30px;height:30px;border-radius:50%;border:2.5px solid var(--ink);background:var(--pink);
+  font-size:18px;line-height:1;font-weight:700;cursor:pointer;box-shadow:2px 2px 0 var(--ink);display:grid;place-items:center;padding:0}
+.contact .x:hover{transform:rotate(90deg);transition:transform .2s}
+.contact dl{margin:0;display:grid;gap:12px}
+.contact dt{font-family:var(--f-display);font-size:16px;line-height:1.1}
+.contact dd{margin:2px 0 0;font-size:15.5px;line-height:1.45;display:flex;flex-wrap:wrap;gap:4px 10px;align-items:baseline;min-width:0}
+.contact .val{user-select:text;-webkit-user-select:text;overflow-wrap:anywhere}
+.contact .cp{border:2px solid var(--ink);background:var(--white);border-radius:5px;font-size:12px;font-weight:600;padding:1px 8px;cursor:pointer}
+.contact a,.contact .lk{color:var(--ink);font-weight:700;text-decoration:underline;text-decoration-thickness:2px;text-decoration-color:var(--pink);text-underline-offset:3px}
+
+/* ---------- the open book ---------- */
+#reader{position:fixed;inset:0;z-index:20;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;
+  padding-block:max(12px,env(safe-area-inset-top,0px)) max(12px,env(safe-area-inset-bottom,0px));
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+  background:rgba(42,24,56,.74);perspective:2600px;transition:opacity .3s}
+#reader.fade{opacity:0}
+.bar{width:min(1080px,100%);display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.bar .sp{flex:1}
+.btn{border:2.5px solid var(--ink);background:var(--white);border-radius:6px;padding:6px 14px;font-weight:600;font-size:15px;
+  box-shadow:3px 3px 0 var(--ink);cursor:pointer}
+.btn:hover{transform:translate(-1px,-1px);box-shadow:4px 4px 0 var(--ink)}
+.btn:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--ink)}
+.btn[disabled]{opacity:.45;cursor:default;transform:none;box-shadow:3px 3px 0 var(--ink)}
+.btn.close{background:var(--bk)}
+#b-sound[aria-pressed="false"]{background:var(--paper-edge)}
+
+.book3d{position:relative;width:min(1080px,100%);height:min(700px,calc(100% - 64px));transform-style:preserve-3d;
+  transition:transform .9s cubic-bezier(.5,.05,.25,1)}
+.book3d.closed{transform:translateX(-25%) scale(.92)}
+/* closing is a slam: short, accelerating swing */
+.book3d.slam,.book3d.slam .cover{transition-duration:.36s;transition-timing-function:cubic-bezier(.6,0,.95,.5)}
+.book3d.slam.closed .spread{transition-delay:.34s}
+.spread{position:relative;height:100%;display:grid;grid-template-columns:1fr 1fr;perspective:2600px;transform-style:preserve-3d;transition:visibility 0s}
+/* closed: only the front cover is visible; the pages hide once the cover has swung shut */
+.book3d.closed .spread{visibility:hidden;transition:visibility 0s .85s}
+/* each half carries its own hardcover edge, so the left half can arrive on the back of the turning cover */
+.half{position:relative;min-width:0;min-height:0;background:var(--bk);border:3px solid var(--ink);padding:4px;box-shadow:8px 8px 0 var(--ink)}
+.half.l{border-right:0;padding-right:0;border-radius:8px 0 0 8px}
+.half.r{border-left:0;padding-left:0;border-radius:0 8px 8px 0}
+.half>.page{height:100%}
+.page{position:relative;overflow:auto;background:var(--paper);border:2px solid var(--ink);overscroll-behavior:contain}
+.page.left{border-radius:6px 0 0 6px;background:linear-gradient(to left,rgba(42,24,56,.13),transparent 7%),var(--paper)}
+.page.right{border-radius:0 6px 6px 0;border-left:0;background:linear-gradient(to right,rgba(42,24,56,.13),transparent 7%),var(--paper)}
+.pg{min-height:100%;display:flex;flex-direction:column;padding:22px clamp(18px,3.2vw,40px) 16px}
+.rh{font-style:italic;font-size:12.5px;color:var(--ink-soft);display:flex;justify-content:space-between;gap:12px;
+  border-bottom:1.5px solid var(--paper-edge);padding-bottom:8px;margin-bottom:18px}
+.body{flex:1;min-width:0}
+.folio{text-align:center;font-size:13px;color:var(--ink-soft);margin-top:18px;font-variant-numeric:tabular-nums}
+.page h2{font-family:var(--f-display);font-weight:400;font-size:clamp(24px,2.6vw,32px);line-height:1.05;margin:0 0 14px;text-wrap:balance}
+.page p{line-height:1.65;margin:0 0 14px;max-width:62ch}
+.page h3{font-family:var(--f-display);font-weight:400;font-size:19px;margin:0 0 6px}
+
+.cover{position:absolute;top:0;bottom:0;left:50%;width:50%;transform-origin:left center;transform-style:preserve-3d;
+  transition:transform .9s cubic-bezier(.5,.05,.25,1);z-index:6}
+.cover>div{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden}
+.cv-front{background:var(--bk);border:3px solid var(--ink);border-radius:0 8px 8px 0;display:flex;flex-direction:column;justify-content:center;
+  padding:8%;gap:14px;box-shadow:inset 14px 0 0 rgba(42,24,56,.14),8px 8px 0 var(--ink)}
+.cv-front .cvt{font-family:var(--f-display);font-size:clamp(34px,5vw,64px);line-height:.95}
+.cv-front .cvtag{display:block;margin-top:6px;font-weight:400;font-style:italic}
+.cv-front .cvs{font-weight:600;font-size:17px}
+.cv-front{cursor:pointer}
+.cv-front .cvb{height:16px;border-block:3px solid var(--ink);background:var(--band);margin:0 -8%}
+.cv-back{transform:rotateY(180deg)}
+.cv-back>.half{height:100%}
+.cv-back .page{overflow:hidden}
+/* photo page */
+.photo{min-height:100%;display:grid;place-items:center;padding-top:10px}
+.polaroid{margin:0;width:min(100%,340px);background:var(--white);border:2.5px solid var(--ink);padding:14px 14px 0;box-shadow:5px 5px 0 var(--ink);
+  transform:rotate(var(--tilt,1.5deg));position:relative}
+.polaroid::before{content:"";position:absolute;top:-13px;left:50%;width:110px;height:26px;background:color-mix(in srgb,var(--wall) 80%,transparent);
+  border:1.5px solid rgba(42,24,56,.25);transform:translateX(-50%) rotate(-4deg)}
+.ph{position:relative;aspect-ratio:1;background:var(--bk);border:2px solid var(--ink);display:grid;place-items:center;overflow:hidden}
+.ph img{width:100%;height:100%;object-fit:cover}
+.ph svg{width:44%}
+.ph .mono{font-family:var(--f-display);font-size:80px;line-height:1;text-shadow:4px 4px 0 var(--white)}
+.ph-l{position:absolute;bottom:8px;left:0;right:0;text-align:center;font-size:12.5px;font-style:italic}
+.polaroid figcaption{font-family:var(--f-hand);font-size:22px;text-align:center;padding:12px 4px 16px;line-height:1.2}
+.book3d.open .cover{transform:rotateY(-180deg)}
+.cover.gone{visibility:hidden}
+/* a turning leaf sits exactly over one paper page (inside the 3px edge + 4px board) */
+.leaf{position:absolute;top:7px;bottom:7px;transform-style:preserve-3d;z-index:5;pointer-events:none}
+.leaf.fwd{left:50%;right:7px;transform-origin:left center}
+.leaf.bwd{left:7px;right:50%;transform-origin:right center}
+.leaf .face{position:absolute;inset:0;overflow:hidden;backface-visibility:hidden;-webkit-backface-visibility:hidden}
+.leaf .face.back{transform:rotateY(180deg)}
+
+/* about */
+.big{font-size:clamp(30px,3.6vw,44px)!important}
+.thisbook{border:2.5px solid var(--ink);background:color-mix(in srgb,var(--bk) 22%,var(--paper));border-radius:8px;padding:14px 16px;margin-top:6px;transform:rotate(-.6deg)}
+.thisbook p{margin:0 0 8px}
+.thisbook p:last-child{margin:0}
+.page .demo{margin-top:14px;font-size:15px}
+
+/* index */
+.idx{list-style:none;margin:0;padding:0;display:grid;gap:4px}
+.it-btn{width:100%;display:flex;align-items:center;gap:10px;background:none;border:0;padding:10px 0;cursor:pointer;text-align:left;
+  font-family:var(--f-display);font-size:clamp(19px,2vw,23px);border-bottom:2px dashed var(--paper-edge)}
+.it-btn .ct{font-family:var(--f-body);font-weight:700;font-size:12px;background:var(--bk);border:2px solid var(--ink);border-radius:20px;padding:1px 8px}
+.it-btn .chev{margin-left:auto;width:12px;height:12px;border-right:3px solid var(--ink);border-bottom:3px solid var(--ink);transform:rotate(45deg) translateY(-3px);transition:transform .25s}
+.it.open .chev{transform:rotate(-135deg) translateY(-3px)}
+.it-btn:hover>span:first-child{text-decoration:underline;text-decoration-thickness:3px;text-decoration-color:var(--bk);text-underline-offset:4px}
+.subs{display:grid;grid-template-rows:0fr;transition:grid-template-rows .3s ease}
+.it.open .subs{grid-template-rows:1fr}
+.subs>ul{overflow:hidden;list-style:none;margin:0;padding:0 0 0 4px}
+.it.open .subs>ul{padding-block:6px 10px}
+.sub-btn{width:100%;display:flex;align-items:baseline;gap:6px;background:none;border:0;padding:6px 6px;cursor:pointer;text-align:left;font-size:16px;border-radius:4px}
+.sub-btn .lead{flex:1;border-bottom:2px dotted var(--ink-soft);transform:translateY(-4px);min-width:16px}
+.sub-btn .pn{font-variant-numeric:tabular-nums;font-size:14px;color:var(--ink-soft)}
+.sub-btn:hover,.sub-btn.on{background:color-mix(in srgb,var(--bk) 35%,transparent)}
+.sub-btn.on{font-weight:700}
+
+/* shop window */
+.hint{font-family:var(--f-hand);color:var(--note);font-size:19px;line-height:1.3;transform:rotate(-1deg);margin-top:4px}
+.cubes{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:18px}
+.cube{display:flex;flex-direction:column;text-align:left;background:var(--white);border:2.5px solid var(--ink);border-radius:8px;padding:0;overflow:hidden;
+  box-shadow:4px 4px 0 var(--ink);cursor:pointer;transform:rotate(var(--tilt,0deg));transition:transform .18s,box-shadow .18s}
+.cube:hover{transform:rotate(0) translate(-2px,-3px);box-shadow:6px 7px 0 var(--ink)}
+.cube .thumb{aspect-ratio:1;overflow:hidden;border-bottom:2.5px solid var(--ink);background:var(--bk);display:grid;place-items:center;padding:10px;font-size:8.5px}
+.cube .thumb>.fmt{width:100%}
+.cube .cap{padding:10px 12px 12px}
+.cube h3{font-size:17px;margin:0 0 4px;line-height:1.1}
+.cube p{font-size:13.5px;line-height:1.4;margin:0}
+
+/* piece */
+.where{font-style:italic;color:var(--ink-soft);font-size:14px;margin:-6px 0 18px!important}
+.notes{background:repeating-linear-gradient(var(--paper) 0 31px,var(--rule) 31px 33px);padding:4px 4px 2px;margin-bottom:22px}
+.notes dt{font-family:var(--f-display);font-size:15px;line-height:33px}
+.notes dd{margin:0 0 2px;font-family:var(--f-hand);color:var(--note);font-size:20px;line-height:33px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(118px,1fr));gap:14px}
+.stat{background:var(--white);border:2.5px solid var(--ink);border-radius:8px;padding:10px 12px;box-shadow:3px 3px 0 var(--ink);transform:rotate(var(--tilt,0deg))}
+.stat b{display:block;font-family:var(--f-display);font-weight:400;font-size:clamp(24px,2.6vw,32px);line-height:1.05;color:var(--ink);text-shadow:2px 2px 0 var(--bk)}
+.stat span{font-size:13.5px;line-height:1.35;display:block;margin-top:4px}
+.next{margin-top:22px}
+
+/* ---------- formats (sized in em so thumbs scale) ---------- */
+.fmt{font-size:1em;color:var(--ink)}
+.f-tweet{background:var(--white);border:.15em solid var(--ink);border-radius:1em;padding:1.2em 1.3em;font-family:system-ui,-apple-system,"Segoe UI",sans-serif}
+.f-tweet .who{display:flex;gap:.8em;align-items:center;margin-bottom:.9em}
+.f-tweet .av{width:3em;height:3em;border-radius:50%;background:var(--bk);border:.15em solid var(--ink);display:grid;place-items:center;font-family:var(--f-display);font-size:1em}
+.f-tweet .nm{font-weight:700;font-size:1.05em;line-height:1.2}
+.f-tweet .hd{color:var(--ink-soft);font-size:.95em}
+.f-tweet .tx{font-size:1.45em;line-height:1.35;margin:0}
+.f-tweet .tm{color:var(--ink-soft);font-size:.9em;margin-top:1em}
+.f-meme{aspect-ratio:1;background:var(--bk);border:.15em solid var(--ink);position:relative;display:grid;place-items:center;overflow:hidden;border-radius:.3em}
+.f-meme .cap{position:absolute;left:.6em;right:.6em;font-family:var(--f-meme);color:var(--white);text-transform:uppercase;text-align:center;font-size:2em;line-height:1.05;
+  text-shadow:.07em .07em 0 var(--ink),-.07em -.07em 0 var(--ink),.07em -.07em 0 var(--ink),-.07em .07em 0 var(--ink)}
+.f-meme .top{top:.4em}.f-meme .bot{bottom:.4em}
+.f-meme svg{width:48%;height:auto}
+.f-push{background:linear-gradient(160deg,var(--shelf),var(--bk));border:.15em solid var(--ink);border-radius:1.6em;padding:1.4em 1em 1.6em;color:var(--white)}
+.f-push .clk{text-align:center;font-family:system-ui,sans-serif;font-weight:200;font-size:3.4em;line-height:1;margin-bottom:.5em}
+.f-push .n{background:rgba(255,255,255,.88);color:var(--ink);border-radius:1em;padding:.8em 1em;margin-top:.6em;font-family:system-ui,sans-serif}
+.f-push .ap{display:flex;gap:.5em;align-items:center;font-size:.85em;color:var(--ink-soft);margin-bottom:.35em}
+.f-push .ic{width:1.4em;height:1.4em;border-radius:.35em;background:var(--bk);border:.12em solid var(--ink)}
+.f-push .ap span:last-child{margin-left:auto}
+.f-push .m{font-size:1.2em;line-height:1.35}
+.f-ad .board{background:var(--wall);border:.2em solid var(--ink);border-radius:.3em;padding:1.6em 1.4em;aspect-ratio:16/8;display:flex;flex-direction:column;justify-content:space-between}
+.f-ad .h{font-family:var(--f-display);font-size:2.3em;line-height:1;text-shadow:.06em .06em 0 var(--white)}
+.f-ad .s{font-weight:600;font-size:1.05em}
+.f-ad .legs{display:flex;justify-content:space-around}
+.f-ad .legs i{width:.9em;height:3em;background:var(--ink)}
+.f-head{background:var(--white);border:.15em solid var(--ink);border-radius:.4em;padding:1.1em 1.3em 1.4em}
+.f-head .mast{font-family:var(--f-meme);font-size:1.5em;border-bottom:.12em solid var(--ink);padding-bottom:.3em;margin-bottom:.8em;display:flex;justify-content:space-between;align-items:baseline}
+.f-head .mast small{font-family:var(--f-body);font-size:.5em;color:var(--ink-soft)}
+.f-head .hl{font-weight:700;font-size:1.75em;line-height:1.12;margin:0 0 .5em}
+.f-head .dk{font-style:italic;font-size:1.1em;margin:0 0 .9em;color:var(--ink-soft)}
+.f-head .ln{height:.55em;background:var(--paper-edge);border-radius:1em;margin-top:.5em}
+.f-head .ln:last-child{width:62%}
+.f-car{display:grid;grid-template-columns:repeat(2,1fr);gap:.8em}
+.f-car .sl{aspect-ratio:1;border:.15em solid var(--ink);border-radius:.4em;padding:1em;display:flex;align-items:flex-end;font-family:var(--f-display);font-size:1.2em;line-height:1.1;background:var(--white)}
+.f-car .sl:nth-child(odd){background:var(--bk)}
+.f-car .sl:first-child{font-size:1.6em}
+.f-car.th{grid-template-columns:1fr}
+.f-car.th .sl{font-size:2.4em}
+.f-car .dots{display:flex;gap:.4em;justify-content:center}
+.f-car .dots i{width:.6em;height:.6em;border-radius:50%;background:var(--ink);opacity:.3}
+.f-car .dots i:first-child{opacity:1}
+.f-mail{background:var(--white);border:.15em solid var(--ink);border-radius:.5em;overflow:hidden}
+.f-mail .hdr2{background:color-mix(in srgb,var(--bk) 30%,var(--white));padding:.9em 1.2em;border-bottom:.15em solid var(--ink);font-size:.95em;line-height:1.5}
+.f-mail .sj{font-weight:700;font-size:1.25em;line-height:1.25;margin-top:.2em}
+.f-mail .bd{padding:1em 1.2em}
+.f-mail .bd p{font-size:1.02em;line-height:1.55;margin:0 0 .7em}
+.f-script{background:var(--white);border:.15em solid var(--ink);border-radius:.3em;padding:1.4em 1.6em;font-family:var(--f-script);font-size:1em}
+.f-script .ttl{text-align:center;font-weight:700;margin-bottom:1.2em;text-decoration:underline}
+.f-script .act{margin:0 0 1em;line-height:1.4}
+.f-script .who{text-align:center;margin:0}
+.f-script .say{margin:0 12% 1em;line-height:1.4}
+
+
+/* ---------- keyboard warrior wall ---------- */
+#wall{position:fixed;inset:0;z-index:30;overflow:auto;overscroll-behavior:contain;
+  background:radial-gradient(var(--wall-dot) 1.7px,transparent 2px) 0 0/24px 24px,var(--wall);
+  padding-block:calc(env(safe-area-inset-top,0px) + 72px) calc(env(safe-area-inset-bottom,0px) + 48px);
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wall-close{position:fixed;z-index:2;top:calc(env(safe-area-inset-top,0px) + 16px);right:max(16px,env(safe-area-inset-right,0px))}
+.wall-grid{max-width:1240px;margin:0 auto;columns:280px;column-gap:30px}
+.pin{display:block;width:100%;break-inside:avoid;margin:0 0 34px;background:none;border:0;padding:0;cursor:zoom-in;text-align:left;
+  position:relative;transform:rotate(var(--r));transition:transform .15s;animation:pin .45s cubic-bezier(.3,1.4,.5,1) both;animation-delay:var(--d)}
+.pin:hover{transform:rotate(0) translateY(-3px)}
+.pin::before{content:"";position:absolute;z-index:1;top:-12px;left:50%;width:90px;height:24px;transform:translateX(-50%) rotate(calc(var(--r) * -2));
+  background:color-mix(in srgb,var(--white) 62%,transparent);border:1.5px solid rgba(42,24,56,.2)}
+@keyframes pin{from{opacity:0;transform:rotate(var(--r)) translateY(-18px) scale(.96)}}
+.pin img,.zoom-in img{display:block;width:100%;height:auto;border:2.5px solid var(--ink);box-shadow:5px 5px 0 var(--ink);background:var(--white)}
+.cm{font-size:14px;background:var(--white);border:2.5px solid var(--ink);box-shadow:5px 5px 0 var(--ink);border-radius:6px;padding:1em 1.1em 1.1em;
+  font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;color:var(--ink)}
+.cm .on{font-size:.88em;color:var(--ink-soft);border-bottom:1px solid var(--paper-edge);padding-bottom:.6em;margin-bottom:.8em;line-height:1.35}
+.cm .who{display:flex;gap:.7em;align-items:center}
+.cm .av{flex:none;width:2.8em;height:2.8em;border-radius:50%;background:var(--shelf);color:var(--white);display:grid;place-items:center;font-weight:700;font-size:1em}
+.cm .nm{font-weight:700;line-height:1.2}
+.cm .rl{font-size:.85em;color:var(--ink-soft)}
+.cm .tm{margin-left:auto;font-size:.85em;color:var(--ink-soft);align-self:flex-start}
+.cm .tx{margin:.7em 0 0 3.5em;background:#F3EFE6;border-radius:0 .7em .7em .7em;padding:.7em .85em;line-height:1.45;font-size:1.03em}
+.cm .ft{margin:.5em 0 0 3.5em;display:flex;gap:1em;font-size:.85em;font-weight:600;color:var(--ink-soft)}
+.zoom{position:fixed;inset:0;z-index:3;background:rgba(42,24,56,.8);display:grid;place-items:center;padding:24px 16px;cursor:zoom-out}
+.zoom-in{width:min(580px,100%);max-height:100%;overflow:auto}
+.zoom-in .cm{font-size:clamp(15px,2.4vw,19px)}
+@media (prefers-reduced-motion:reduce){.pin{animation:none;transition:none}}
+@media (max-width:760px){
+  .book3d{height:calc(100% - 60px)}
+  .book3d.closed{transform:scale(.94)}
+  .spread{display:block;overflow:auto;overscroll-behavior:contain;border-radius:8px;background:var(--bk);border:3px solid var(--ink);padding:4px;box-shadow:6px 6px 0 var(--ink)}
+  .half,.half.l,.half.r{border:0;padding:0;border-radius:0;box-shadow:none;background:none}
+  .page{overflow:visible}
+  .page.left,.page.right{border-radius:0;border:2px solid var(--ink)}
+  .page.right{border-top:0}
+  .pg{min-height:0}
+  .cover{left:0;width:100%;top:0;bottom:0}
+  .cv-back{display:none}
+  .cubes{grid-template-columns:1fr 1fr;gap:12px}
+  .cube .thumb{font-size:7px}
+}
+@media (prefers-reduced-motion:reduce){
+  .shelf.wob{animation:none}
+  .book3d,.cover,.subs,.chev,.cube{transition:none!important}
+}
+</style>
+</head>
+<body>
+<div id="stage" aria-label="Bookshelf">
+  <header class="hdr" id="hdr"><div class="hdr-in">
+    <h1>a data science student at IIT Madras turned writer</h1>
+    <p>hi, i'm sanyam, a content writer and strategist<br>each book here is a story of me at that place<br>read it, throw it... do wtv you want</p>
+    <button type="button" class="demo kw" id="kw" aria-haspopup="dialog">a full-time keyboard warrior</button>
+  </div></header>
+  <div class="floor"></div>
+</div>
+
+<div id="reader" hidden role="dialog" aria-modal="true" aria-labelledby="rd-title">
+  <div class="bar">
+    <button class="btn" id="b-back" type="button">Back</button>
+    <button class="btn" id="b-index" type="button">Index</button>
+    <span class="sp"></span>
+    <button class="btn" id="b-sound" type="button" aria-pressed="true">Sound on</button>
+    <button class="btn close" id="b-close" type="button">Close book</button>
+  </div>
+  <div class="book3d closed" id="book3d">
+    <div class="spread" id="spread">
+      <div class="half l" id="hL"><section class="page left" id="pL"></section></div>
+      <div class="half r" id="hR"><section class="page right" id="pR"></section></div>
+    </div>
+    <div class="cover" id="cover"><div class="cv-front" id="cvF"></div><div class="cv-back" id="cvB"></div></div>
+  </div>
+</div>
+
+<div id="wall" hidden role="dialog" aria-modal="true" aria-label="My LinkedIn comments">
+  <button class="btn wall-close" id="w-close" type="button">Close</button>
+  <div class="wall-grid" id="wallGrid"></div>
+  <div class="zoom" id="zoom" hidden><div class="zoom-in" id="zoomIn"></div></div>
+</div>
+
+<div class="capsule" id="capsule" hidden aria-hidden="true"><i class="flash"></i><i class="h bot"></i><i class="h top"></i></div>
+<div class="contact" id="contact" hidden role="dialog" aria-label="Contact Sanyam">
+  <button class="x" id="c-close" type="button" aria-label="Close">×</button>
+  <dl>
+    <div><dt>Email</dt><dd><span class="val">sanyam111530@gmail.com</span><button class="cp" type="button" data-copy="sanyam111530@gmail.com">Copy</button></dd></div>
+    <div><dt>Phone</dt><dd><span class="val">+91 7058881267</span><button class="cp" type="button" data-copy="+91 7058881267">Copy</button></dd></div>
+    <div><dt>Socials</dt><dd><span><span id="lnk-li">LinkedIn</span> | (<span id="lnk-ig">Instagram</span>) If you want to slide in my dms💅</span></dd></div>
+  </dl>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
+<script>
+/* ================= CONTENT (demo) ================= */
+const BOOKS = [
+{ name:`DViO Part 1`, years:`june-sept 2025`, spine:`Jun–Sep\n'25`, color:`pink`, band:`var(--shelf)`, mis:`var(--shelf)`,
+  role:`copywriting Intern`,
+  tagline:`hated AI initially... used it a ton later... lost my fucking creative brain`,
+  about:{ title:`hi, i'm sanyam`,
+    paras:[
+      [`in June 2025, i was 18, had 0 agency experience, and ran an Instagram writing page so embarrassing it should be sealed by a court order`,
+       `i applied to DViO for 1 reason: they had 90,000 followers on linkedin, and my 18-year-old brain thought that meant they ran the internet`],
+      [`somehow, i survived the interview and landed in the sports cluster`,
+       `within weeks, i went from writing cringe insta posts to visualising, strategising, and planning shoots for Matter Motors, writing content for Bare Knuckle Fighting Championship, and the World Tennis League`],
+      [`i walked in knowing nothing and walked out knowing how to build a campaign from scratch`,
+       `every page in this book is a piece of that first rodeo`],
+    ],
+    box:[`this book: DViO Part 1, June-Sept 2025`,
+      `18-year-old intern in the sportotainment`,
+      `3 months of chaos, my first gay encounter, and learning the craft from a goated 26-year-old South Indian manager who looked 38, dated his ex-intern, and had a hairline fighting for its life`],
+  },
+  intro:`14 people above a dentist. I wrote for 9 clients at once and learned to finish a headline before the printer jammed.`,
+  sections:[
+  { title:`People I worked with`, subs:[
+    { name:`Mira, creative director`, cap:`Mira, mid-"fine". Rare footage.`, body:[`Mira rejected my first 40 headlines. She approved the 41st by saying "fine", which from her was a parade.`,`She taught me to cut my favourite line first. If the ad still works without it, the line was for me.`]},
+    { name:`Dev, designer`, cap:`Dev and me after pitch 11. We lost to the tooth.`, body:[`Dev and I paired on every pitch. He sketched, I captioned, and we swapped until nobody could say whose idea it was.`,`We won 6 of the 11 pitches we did together. We lost one to a mascot shaped like a tooth. We worked above a dentist, so we took it personally.`]},
+    { name:`The account team`, cap:`The people who translated "make it pop".`, body:[`They turned client notes like "make it pop" into edits I could act on.`,`From them I learned to ask what problem the ad solves before I open a blank doc.`]},
+  ]},
+  { title:`Brands`, subs:[
+    { name:`BKFC (WLF)`, cap:`BKFC (WLF)`, body:[`more on this one soon.`]},
+    { name:`WTL`, cap:`WTL`, body:[`more on this one soon.`]},
+    { name:`Matter Motors`, cap:`Matter Motors`, body:[`more on this one soon.`]},
+    { name:`DViO Social`, cap:`DViO Social`, body:[`more on this one soon.`]},
+  ]},
+  { title:`My best work`, work:true, subs:[
+    { name:`Announcement posts`, intro:`pieces coming soon.`, pieces:[] },
+    { name:`Reels`, intro:`pieces coming soon.`, pieces:[] },
+    { name:`Statics`, intro:`pieces coming soon.`, pieces:[] },
+  ]},
+  { title:`What I enjoyed`, subs:[
+    { name:`Switching voices all day`, cap:`My Monday-to-Friday voice chart.`, body:[`Monday I was a pickle grandma. Tuesday I was a fitness app with trust issues.`,`Changing voice every 2 hours made me fast, and it made me listen for how each brand talks.`]},
+    { name:`Pitch nights`, cap:`Whiteboard 3, 11:40 pm.`, body:[`Pitches ran late, with cold pizza and 3 whiteboards.`,`The best ideas showed up after 10 pm, when everyone was too tired to be careful.`]},
+    { name:`Hearing no early`, cap:`Draft 41. Approved.`, body:[`An agency gives you 20 nos a day. After a month they stop hurting.`,`Now I bring 10 options to every review and I don't fall in love with any of them.`]},
+  ]},
+]},
+
+{ name:`ScoopWhoop`, years:`dec '25-march '26`, spine:`dec '25\nmar '26`, color:`mint`, band:`var(--orange)`, mis:`var(--pink)`,
+  role:`content strategy intern (linkedin)`,
+  tagline:`treated linkedin like insta... realised i didn't need ai to write; i'm crazy creative`,
+  about:{ title:`why i accepted a 50% pay cut`,
+    paras:[
+      [`my first agency internship paid 10k a month. this one paid 5k. every career rule says you never take a 50% pay cut, especially at the start. i took it anyway because i had been fanboying over scoopwhoop's linkedin since march, and i knew having their name on my resume would take me places an extra 5,000 rupees never could.`],
+      [`before me, their linkedin was run by 1 guy in bangalore. i became person number 2 from my bedroom in pune. for 166 rupees a day, i roasted corporate india, ranked coworkers as dry fruits, and farmed engagement by calling my own manager toxic in public.`],
+      [`i walked in with 0 linkedin experience and walked out 90 days later with 5 million+ impressions, 1 million accounts reached, and 150k engagement.`],
+    ],
+    box:[`this book: scoopwhoop, dec 2025-march 2026.`,
+      `content strategy intern. half of the linkedin team. 50% of the linkedin team, 50% less stipend, 5m+ impressions. also went 2-for-2 on working under goated south indian managers who tolerated my slander because the numbers kept going up.`],
+  },
+  intro:`A chip brand whose whole personality is "oops". I ran the voice on 4 platforms, including a Twitter account with 1.2 million followers.`,
+  sections:[
+  { title:`People I worked with`, subs:[
+    { name:`Priya, head of brand`, cap:`Priya, defending a tweet.`, body:[`Priya gave me 1 rule: never punch down, always punch the bag.`,`She defended weird tweets in meetings I wasn't invited to. I found out a year later.`]},
+    { name:`The community team`, cap:`Friday comment review.`, body:[`4 people answered 600 comments a day. I wrote them a reply bank of 200 lines so they could be fast and still sound like us.`,`They sent me the funniest comments every Friday. 3 of those comments became campaigns.`]},
+    { name:`The flavor lab`, cap:`The lab notes that became tweets.`, body:[`Food scientists who could explain why a flavor tasted "purple".`,`Half my best tweets started as their lab notes.`]},
+  ]},
+  { title:`Brands`, subs:[
+    { name:`scoopwhoop linkedin`, cap:`scoopwhoop linkedin`, body:[`more on this one soon.`]},
+  ]},
+  { title:`work`, work:true, subs:[
+    { name:`proud`, intro:`pieces coming soon.`, pieces:[] },
+    { name:`best performing`, intro:`pieces coming soon.`, pieces:[] },
+    { name:`meme dumps`, intro:`pieces coming soon.`, pieces:[] },
+    { name:`topicals`, intro:`pieces coming soon.`, pieces:[] },
+  ]},
+  { title:`What I enjoyed`, subs:[
+    { name:`Replying to strangers`, cap:`A reply that got 200k views.`, body:[`Some of my best writing here was in replies: 1 line, written in 30 seconds, read by 200,000 people.`,`It taught me to trust the first draft when the moment is moving fast.`]},
+    { name:`Tweets that became products`, cap:`The tweet, framed in the office.`, body:[`A tweet became a product. That still feels unreal.`,`It showed me the comments section is a free research team.`]},
+    { name:`Being allowed to be weird`, cap:`The brand rulebook. It's 1 page.`, body:[`Priya let the brand be odd as long as it was kind.`,`I learned where the line is: joke about the chip, the bag and yourself. Never the customer.`]},
+  ]},
+]},
+
+{ name:`DViO Part 2`, years:`July–Sept 2026`, spine:`Jul–Sep\n'26`, color:`pink`, band:`var(--wall)`, mis:`var(--mint)`,
+  role:`Staff satire writer`,
+  intro:`A satire site and a network of 11 meme pages. I wrote fake headlines about real feelings, 5 a day.`,
+  sections:[
+  { title:`People I worked with`, subs:[
+    { name:`The headline room`, cap:`8 out of 50. A normal morning.`, body:[`Every morning 6 writers pitched 50 headlines. About 8 got published.`,`I learned to pitch fast and let go of the rest faster.`]},
+    { name:`Jo, managing editor`, cap:`Jo's red pen. No mercy.`, body:[`Jo cut every headline to its shortest form. "Area man" over "a local resident", every time.`,`She also taught me which jokes would get us sued. Short list, important list.`]},
+    { name:`The page admins`, cap:`11 admins, 1 group chat.`, body:[`11 admins ran the meme pages and knew their crowds better than any dashboard.`,`They told me when a meme felt like an ad. The first draft always did.`]},
+  ]},
+  { title:`Brands`, subs:[
+    { name:`The Daily Sigh`, cap:`The homepage on a big news day.`, body:[`Our satire news site, with 3 million monthly readers.`,`I wrote headlines, short articles, and a weekly horoscope for your job.`]},
+    { name:`Corporate Feelings`, cap:`Read during meetings, mostly.`, body:[`A workplace meme page with 900k followers, mostly people reading it during meetings.`,`I wrote about 4 memes a day there.`]},
+    { name:`Sponsored satire`, cap:`LockBox, being a good sport.`, body:[`Brands paid us to make fun of them. I wrote 14 of these deals.`,`The rule: the brand can be the target or the punchline. If it's the hero, readers leave.`]},
+  ]},
+  { title:`My best work`, work:true, subs:[
+    { name:`Satire headlines`, intro:`Fake news about real feelings, for The Daily Sigh.`, pieces:[
+      { fmt:`head`, pub:`The Daily Sigh`, title:`Circling back`, blurb:`Office jargon, taken literally.`, where:`The Daily Sigh, 2022`,
+        h:`Local Man Who Said "Let's Circle Back" Has Now Been Circling for 3 Years`, dk:`Colleagues say he is "almost back".`,
+        thought:[[`The brief`,`Daily headline slot, workplace category.`],[`The bet`,`Jargon is funny when you take it literally. "Circle back" became a man walking in a circle.`],[`What happened`,`Most-shared headline of the quarter. People posted it on LinkedIn without credit, which we took as praise.`]],
+        stats:[[`1.1M`,`page views`],[`84k`,`shares`],[`#1`,`headline of Q3`]]},
+      { fmt:`head`, pub:`The Daily Sigh`, title:`Out of office`, blurb:`A fake study everyone believed.`, where:`The Daily Sigh, December 2022`,
+        h:`Study Finds 9 in 10 Out-of-Office Replies Are Lying`, dk:`The 10th person did go on holiday but is checking email anyway.`,
+        thought:[[`The brief`,`Holiday-season content.`],[`The bet`,`Fake studies work when the number is believable. 9 in 10 felt true to anyone with a job.`],[`What happened`,`3 journalists emailed to ask for the full study.`]],
+        stats:[[`740k`,`page views`],[`52k`,`shares`],[`3`,`journalists asked for the study`]]},
+      { fmt:`head`, pub:`The Daily Sigh`, title:`Terms and conditions`, blurb:`Nobody reads them. She did.`, where:`The Daily Sigh, 2023`,
+        h:`Area Woman Reads Terms and Conditions, Is Now Legally a Subscription`, dk:`She renews monthly.`,
+        thought:[[`The brief`,`Tech category headline.`],[`The bet`,`Everyone taps "agree" without reading. I wrote what happens to the 1 person who reads.`],[`What happened`,`The comments became people confessing what they've agreed to.`]],
+        stats:[[`620k`,`page views`],[`38k`,`shares`],[`11k`,`comments`]]},
+    ]},
+    { name:`Workplace memes`, intro:`For Corporate Feelings. Posted between 9 and 11 am, when people are in meetings.`, pieces:[
+      { fmt:`meme`, face:`tired`, title:`Could have been nothing`, blurb:`A meme people posted in their work Slack.`, where:`Corporate Feelings on Instagram, 2022`,
+        top:`The meeting could have been an email`, bot:`The email could have been nothing`,
+        thought:[[`The brief`,`Monday morning post.`],[`The bet`,`"Could have been an email" is an old joke. I added a second step.`],[`What happened`,`It became a custom Slack emoji at 2 companies we know of.`]],
+        stats:[[`480k`,`reach`],[`61k`,`shares`],[`2`,`company Slack emojis`]]},
+      { fmt:`meme`, face:`smug`, title:`One Excel tutorial`, blurb:`Small skill, big job title.`, where:`Corporate Feelings on Instagram, 2023`,
+        top:`Me after one Excel tutorial`, bot:`Updating LinkedIn: data analyst`,
+        thought:[[`The brief`,`Weekly LinkedIn-satire slot.`],[`The bet`,`Everyone knows someone who does this. People tag that friend.`],[`What happened`,`About 9,000 tags in the comments. We counted roughly.`]],
+        stats:[[`390k`,`reach`],[`44k`,`shares`],[`9k`,`tags`]]},
+    ]},
+    { name:`Sponsored satire`, intro:`Paid work where the sponsor is part of the joke. Both pieces here are for LockBox, a password manager.`, pieces:[
+      { fmt:`script`, title:`The last man without a password manager`, blurb:`A fake movie trailer for a password manager.`, where:`YouTube and Reels, 2023, sponsored by LockBox`,
+        lines:[[`act`,`A dark room. A man stares at a sticky note on his monitor.`],[`NARRATOR`,`In a world of 140 passwords...`],[`MAN`,`(whispering) Password1. Password2. Password1!`],[`NARRATOR`,`One man refused to change.`],[`act`,`The sticky note falls. He screams.`],[`NARRATOR`,`LockBox. It remembers, so you don't have to.`]],
+        thought:[[`The brief`,`Make a password manager funny without making it look unsafe.`],[`The bet`,`A trailer voice makes anything dramatic. Forgetting a password is a tiny tragedy, so it got a trailer.`],[`What happened`,`Our most-watched sponsored video. LockBox renewed for 3 more.`]],
+        stats:[[`2.2M`,`views`],[`68%`,`watched to the end`],[`3`,`more videos ordered`]]},
+      { fmt:`head`, pub:`The Daily Sigh`, title:`Consistent`, blurb:`A sponsored headline readers shared anyway.`, where:`The Daily Sigh, 2023, sponsored by LockBox`,
+        h:`Man Who Uses Same Password Everywhere Describes Himself as "Consistent"`, dk:`Sponsored by LockBox.`,
+        thought:[[`The brief`,`Second piece in the LockBox deal.`],[`The bet`,`Sponsored headlines die when they sound like ads. This one names the sponsor only in the small print.`],[`What happened`,`Click-through to the sponsor was 4 times the deal's target.`]],
+        stats:[[`510k`,`page views`],[`29k`,`shares`],[`4.3%`,`click-through to sponsor`]]},
+    ]},
+  ]},
+  { title:`What I enjoyed`, subs:[
+    { name:`The 6 am headline sprint`, cap:`6:04 am. Headline 1 of 50.`, body:[`50 headlines before coffee. Most were bad, on purpose.`,`Writing a lot of bad lines fast is how you find the 1 good one.`]},
+    { name:`Deadlines of right now`, cap:`10:20 am. Posted.`, body:[`News broke at 10 and we posted by 10:20.`,`I learned to trust my first idea and edit it once.`]},
+    { name:`Becoming a reaction`, cap:`My headline in a stranger's group chat.`, body:[`My favourite metric: seeing my headline used as someone's reply in a group chat, with no credit.`,`It means the line said the thing better than they could.`]},
+  ]},
+]},
+
+{ name:`Not a corporate majdur`, spineName:`Not a corporate\nmajdur`, years:`Sept–∞`, spine:`Sep–∞`, color:`orange`, band:`var(--mint)`, mis:`var(--shelf)`,
+  role:`Content strategist`,
+  intro:`A budgeting app for people who check their balance with one eye closed. I set the content strategy and write the newsletter.`,
+  sections:[
+  { title:`People I worked with`, subs:[
+    { name:`The product team`, cap:`Onboarding, 9 screens down to 5.`, body:[`I sit in product reviews, so the words get planned with the screens.`,`We cut onboarding from 9 screens to 5. 3 of the cuts were sentences.`]},
+    { name:`Compliance`, cap:`The joke review meeting.`, body:[`Compliance and I read every joke together.`,`Most jokes pass if the numbers in them are correct, so now I check the numbers before I write the joke.`]},
+    { name:`The growth team`, cap:`Tuesday, arguing nicely.`, body:[`They own the dashboards and I own the words. We meet on Tuesdays and argue nicely.`,`Every piece I write has a target number we agree on before it ships.`]},
+  ]},
+  { title:`Brands`, subs:[
+    { name:`Ledgerly app`, cap:`The voice guide, page 1.`, body:[`The budgeting app itself. I wrote the voice guide, onboarding, and about 400 lines of in-app copy.`,`The voice: a friend who's good with money and doesn't make it weird.`]},
+    { name:`Broke & Fine`, cap:`Issue 52 going out.`, body:[`Our weekly money newsletter, with 210k subscribers.`,`It explains 1 money idea per week with 1 joke per paragraph.`]},
+    { name:`Ledgerly Wrapped`, cap:`An Oat Latte Patron in the wild.`, body:[`A year-end recap of your spending, written to be shared.`,`Your top category, your most-visited shop, and a title like "The Oat Latte Patron".`]},
+  ]},
+  { title:`My best work`, work:true, subs:[
+    { name:`Broke & Fine newsletter`, intro:`A weekly email people open on purpose.`, pieces:[
+      { fmt:`email`, from:`Broke & Fine`, title:`The group chat issue`, blurb:`A newsletter about subscriptions.`, where:`Email to 210k subscribers, 2024`,
+        subject:`Your money has a group chat and you're not in it`, preview:`Let's talk about autopay.`,
+        body:[`Hi,`,`Your subscriptions talk to each other. They renew in the same week, they never cancel, and they've been planning this.`,`This week: how to find every subscription you pay for in 4 minutes, and which 2 to cancel first.`,`Ledgerly`],
+        thought:[[`The brief`,`Get people using the new subscription tracker.`],[`The bet`,`Nobody opens a feature email. People open a joke about their own money.`],[`What happened`,`Best open rate of the year, and the feature's busiest week.`]],
+        stats:[[`54%`,`open rate`],[`11%`,`click rate`],[`+38%`,`feature use that week`]]},
+      { fmt:`email`, from:`Broke & Fine`, title:`Small treat math`, blurb:`Budget advice without the lecture.`, where:`Email to 210k subscribers, 2024`,
+        subject:`We did the math on your "small treat"`, preview:`It's fine. Mostly.`,
+        body:[`Hi,`,`A 4-dollar treat, 5 times a week, is 1,040 dollars a year. Keep it.`,`Give it a name in your budget instead. "Small treat" is now a category. Set a limit and enjoy it without the guilt.`,`Ledgerly`],
+        thought:[[`The brief`,`Get people to set their first budget category.`],[`The bet`,`Money advice usually opens with guilt. I opened by allowing the treat.`],[`What happened`,`62,000 people made a "small treat" category that week.`]],
+        stats:[[`49%`,`open rate`],[`62k`,`new "small treat" categories`],[`0`,`lectures`]]},
+    ]},
+    { name:`Content strategy`, intro:`The plan behind the jokes. Content became a growth channel with its own target.`, pieces:[
+      { fmt:`carousel`, title:`The 2024 plan`, blurb:`The strategy deck, cut to 6 slides.`, where:`Internal deck, January 2024`,
+        slides:[`2024 content plan`,`Goal: 30% of new users come from content`,`Who: 22 to 30, first salary, mildly panicking`,`Where: newsletter, short video, in-app`,`What: 1 money idea per post, 1 joke per idea`,`Measure: signups per piece, every month`],
+        thought:[[`The brief`,`Turn content into a growth channel with a number on it.`],[`The bet`,`1 audience, 3 channels, 1 metric. Every other idea went on a later list.`],[`What happened`,`Content brought in 34% of new users in 2024, 4 points over target.`]],
+        stats:[[`34%`,`of new users from content`],[`3`,`channels`],[`1`,`metric we report`]]},
+    ]},
+    { name:`In-app copy`, intro:`Small lines inside the app that people screenshot.`, pieces:[
+      { fmt:`push`, app:`Ledgerly`, title:`Payday messages`, blurb:`Notifications people don't mute.`, where:`Ledgerly app, 2024`,
+        msgs:[`You spent 40% less on food delivery this month. Your fridge is proud of you.`,`Payday! Before you do anything, your rent would like a word.`],
+        thought:[[`The brief`,`31% of users had muted our notifications.`],[`The bet`,`People mute apps that nag. I wrote notifications that notice good news first.`],[`What happened`,`The mute rate fell to 12%.`]],
+        stats:[[`12%`,`mute rate (was 31%)`],[`+19%`,`weekly active users`],[`400`,`lines of in-app copy`]]},
+      { fmt:`push`, app:`Ledgerly`, title:`Wrapped is ready`, blurb:`The message that started the year-end recap.`, where:`Ledgerly app, December 2024`,
+        msgs:[`Your Ledgerly Wrapped is ready. This year you were The Oat Latte Patron.`],
+        thought:[[`The brief`,`Launch Ledgerly Wrapped.`],[`The bet`,`People share titles about themselves. Every user got a spending persona with a name.`],[`What happened`,`280,000 people shared their recap to their stories.`]],
+        stats:[[`1.3M`,`recaps opened`],[`280k`,`shared to stories`],[`+22%`,`December signups`]]},
+    ]},
+  ]},
+  { title:`What I enjoyed`, subs:[
+    { name:`Making money less scary`, cap:`A reader's reply that made my week.`, body:[`Most money writing makes people feel behind.`,`I try to make 1 reader feel fine about their budget every week.`]},
+    { name:`Numbers on everything`, cap:`The target, set before the draft.`, body:[`Every piece gets a target before it ships.`,`It changed how I write. I cut lines that only I would miss.`]},
+    { name:`Jokes past compliance`, cap:`Approved on the first try. Once.`, body:[`Getting a joke approved by compliance is the hardest edit I do.`,`It's also the most satisfying one.`]},
+  ]},
+]},
+];
+
+/* ================= HELPERS ================= */
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const wide = () => matchMedia('(min-width: 761px)').matches;
+const tilts = ['-1.4deg','1deg','-.6deg','1.6deg','-1deg'];
+
+function face(m){
+  const eyes = {shock:'<circle cx="36" cy="42" r="7" fill="#fff"/><circle cx="64" cy="42" r="7" fill="#fff"/><circle cx="36" cy="42" r="3"/><circle cx="64" cy="42" r="3"/>',
+    smug:'<path d="M28 44h16M56 44h16" stroke-width="5"/><path d="M28 40q8-4 16 0M56 40q8-4 16 0" fill="none" stroke-width="3"/>',
+    tired:'<path d="M28 44q8 6 16 0M56 44q8 6 16 0" fill="none" stroke-width="4"/><path d="M30 52q6 3 12 0M58 52q6 3 12 0" fill="none" stroke-width="2"/>'}[m];
+  const mouth = {shock:'<ellipse cx="50" cy="70" rx="8" ry="11" fill="#2A1838"/>',smug:'<path d="M36 68q14 10 28-6" fill="none" stroke-width="5"/>',tired:'<path d="M38 70h24" stroke-width="5"/>'}[m];
+  return `<svg viewBox="0 0 100 100" aria-hidden="true" stroke="#2A1838" fill="#2A1838" stroke-linecap="round"><circle cx="50" cy="50" r="44" fill="#FFE45C" stroke-width="5"/>${eyes}${mouth}</svg>`;
+}
+
+function fmtHTML(p, thumb){
+  switch(p.fmt){
+    case 'tweet': return `<div class="fmt f-tweet"><div class="who"><div class="av">${esc(p.who[0])}</div><div><div class="nm">${esc(p.who)}</div><div class="hd">${esc(p.handle)}</div></div></div><p class="tx">${esc(p.text)}</p>${thumb?'':`<div class="tm">${esc(p.where)}</div>`}</div>`;
+    case 'meme': return `<div class="fmt f-meme"><div class="cap top">${esc(p.top)}</div>${face(p.face)}<div class="cap bot">${esc(p.bot)}</div></div>`;
+    case 'push': return `<div class="fmt f-push"><div class="clk">9:41</div>${p.msgs.map(m=>`<div class="n"><div class="ap"><i class="ic"></i><span>${esc(p.app)}</span><span>now</span></div><div class="m">${esc(m)}</div></div>`).join('')}</div>`;
+    case 'ad': return `<div class="fmt f-ad"><div class="board"><div class="h">${esc(p.h)}</div><div class="s">${esc(p.s)}</div></div>${thumb?'':'<div class="legs"><i></i><i></i></div>'}</div>`;
+    case 'head': return `<div class="fmt f-head"><div class="mast">${esc(p.pub)}<small>Satire</small></div><p class="hl">${esc(p.h)}</p><p class="dk">${esc(p.dk)}</p><div class="ln"></div><div class="ln"></div><div class="ln"></div></div>`;
+    case 'carousel': return thumb
+      ? `<div class="fmt f-car th"><div class="sl">${esc(p.slides[0])}</div></div>`
+      : `<div class="fmt f-car">${p.slides.map(s=>`<div class="sl">${esc(s)}</div>`).join('')}</div>`;
+    case 'email': return `<div class="fmt f-mail"><div class="hdr2"><div>From: ${esc(p.from)}</div><div class="sj">${esc(p.subject)}</div><div>${esc(p.preview)}</div></div>${thumb?'':`<div class="bd">${p.body.map(b=>`<p>${esc(b)}</p>`).join('')}</div>`}</div>`;
+    case 'script': return `<div class="fmt f-script"><div class="ttl">${esc(p.title)}</div>${p.lines.map(([w,t])=>w==='act'?`<p class="act">${esc(t)}</p>`:`<p class="who">${esc(w)}</p><p class="say">${esc(t)}</p>`).join('')}</div>`;
+  }
+  return '';
+}
+
+/* page numbers: every spread in reading order */
+function pageMap(b){
+  const m = {}; let n = 2;
+  const add = k => { m[k] = n; n += 2; };
+  add('index');
+  b.sections.forEach((sec,t)=>sec.subs.forEach((s,i)=>{
+    if(sec.work){ add(`work:${t}:${i}`); s.pieces.forEach((_,p)=>add(`piece:${t}:${i}:${p}`)); }
+    else add(`sub:${t}:${i}`);
+  }));
+  return m;
+}
+const keyOf = v => v.type==='index'?'index':v.type==='piece'?`piece:${v.t}:${v.s}:${v.p}`:`${v.type}:${v.t}:${v.s}`;
+
+/* ================= PAGE SOUNDS (synthesised, no files) ================= */
+// Paper rustle = band-passed noise sweeping up then down, lasting as long as the turn,
+// plus a soft low "flap" when the page lands. The cover uses a deeper, heavier version.
+const Snd = { ctx:null, noise:null, on:true };
+try{ Snd.on = localStorage.getItem('pageSound') !== 'off'; }catch(_){}
+function audio(){
+  if(reduce || !Snd.on) return null;
+  if(!Snd.ctx){ const C = window.AudioContext || window.webkitAudioContext; if(!C) return null; Snd.ctx = new C(); }
+  if(Snd.ctx.state === 'suspended') Snd.ctx.resume();
+  if(!Snd.noise){
+    const n = Snd.ctx.sampleRate * 1.2, buf = Snd.ctx.createBuffer(1, n, Snd.ctx.sampleRate), d = buf.getChannelData(0);
+    for(let i=0;i<n;i++) d[i] = Math.random()*2 - 1;
+    Snd.noise = buf;
+  }
+  return Snd.ctx;
+}
+function noiseThrough(ctx, filter, gain, start, stop){
+  const src = ctx.createBufferSource(); src.buffer = Snd.noise; src.loop = true;
+  src.connect(filter); filter.connect(gain); gain.connect(ctx.destination);
+  src.onended = () => { src.disconnect(); filter.disconnect(); gain.disconnect(); };
+  src.start(start, Math.random()*.5); src.stop(stop);
+}
+function playTurn(dur, kind){
+  const ctx = audio(); if(!ctx) return;
+  const now = ctx.currentTime, cover = kind === 'cover';
+  const lo = cover ? 500 : 1100, hi = cover ? 1700 : 3600, peak = (cover ? .32 : .26)*.38;
+  // rustle
+  const bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.Q.value = .8;
+  bp.frequency.setValueAtTime(lo, now);
+  bp.frequency.exponentialRampToValueAtTime(hi, now + dur*.45);
+  bp.frequency.exponentialRampToValueAtTime(lo*1.3, now + dur*.9);
+  const g = ctx.createGain();
+  g.gain.setValueAtTime(.001, now);
+  g.gain.exponentialRampToValueAtTime(peak*.55, now + .05);
+  // small irregular dips so it crinkles like paper instead of hissing
+  for(let t = .08; t < dur*.8; t += .045 + Math.random()*.04)
+    g.gain.setValueAtTime(peak*(.45 + Math.random()*.55)*Math.sin(Math.PI*Math.min(1, t/dur + .15)), now + t);
+  g.gain.exponentialRampToValueAtTime(.001, now + dur*.95);
+  noiseThrough(ctx, bp, g, now, now + dur);
+  // landing flap
+  const t0 = now + dur*.86;
+  const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = cover ? 380 : 700;
+  const fg = ctx.createGain();
+  fg.gain.setValueAtTime(.001, t0);
+  fg.gain.exponentialRampToValueAtTime((cover ? .7 : .42)*.38, t0 + .008);
+  fg.gain.exponentialRampToValueAtTime(.001, t0 + (cover ? .16 : .1));
+  noiseThrough(ctx, lp, fg, t0, t0 + .2);
+}
+// Sticker click: 12 ms band-passed noise tick, peaking around 40% of full scale
+function playClick(){
+  const ctx = audio(); if(!ctx) return;
+  const now = ctx.currentTime;
+  const bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 3200; bp.Q.value = .9;
+  const g = ctx.createGain();
+  g.gain.setValueAtTime(.001, now);
+  g.gain.exponentialRampToValueAtTime(.8, now + .002);
+  g.gain.exponentialRampToValueAtTime(.001, now + .014);
+  noiseThrough(ctx, bp, g, now, now + .03);
+}
+// Book slammed shut: a sharp "cut" crack, a deep thump, then a short "tuck" settle.
+function playSlam(delay){
+  const ctx = audio(); if(!ctx) return;
+  const t = ctx.currentTime + delay;
+  const hp = ctx.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 1800;
+  const cg = ctx.createGain();
+  cg.gain.setValueAtTime(.001, t);
+  cg.gain.exponentialRampToValueAtTime(.45, t + .002);
+  cg.gain.exponentialRampToValueAtTime(.001, t + .05);
+  noiseThrough(ctx, hp, cg, t, t + .08);
+  const o = ctx.createOscillator(), og = ctx.createGain();
+  o.type = 'sine'; o.frequency.setValueAtTime(120, t); o.frequency.exponentialRampToValueAtTime(42, t + .16);
+  og.gain.setValueAtTime(.001, t);
+  og.gain.exponentialRampToValueAtTime(.55, t + .004);
+  og.gain.exponentialRampToValueAtTime(.001, t + .24);
+  o.connect(og); og.connect(ctx.destination); o.onended = () => { o.disconnect(); og.disconnect(); };
+  o.start(t); o.stop(t + .26);
+  const t2 = t + .09;
+  const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 420;
+  const tg = ctx.createGain();
+  tg.gain.setValueAtTime(.001, t2);
+  tg.gain.exponentialRampToValueAtTime(.4, t2 + .004);
+  tg.gain.exponentialRampToValueAtTime(.001, t2 + .12);
+  noiseThrough(ctx, lp, tg, t2, t2 + .15);
+}
+const sBtn = $('#b-sound');
+function paintSound(){ sBtn.textContent = Snd.on ? 'Sound on' : 'Sound off'; sBtn.setAttribute('aria-pressed', Snd.on); }
+paintSound();
+if(reduce) sBtn.hidden = true;
+sBtn.addEventListener('click', ()=>{
+  Snd.on = !Snd.on; paintSound();
+  try{ localStorage.setItem('pageSound', Snd.on ? 'on' : 'off'); }catch(_){}
+});
+
+/* ================= READER ================= */
+const R = { book:null, stack:[], open:new Set(), busy:false, pages:null, opener:null };
+const reader=$('#reader'), book3d=$('#book3d'), spread=$('#spread'), pL=$('#pL'), pR=$('#pR'), cover=$('#cover'), cvF=$('#cvF'), cvB=$('#cvB'), hL=$('#hL');
+// on wide screens the whole left half (page + hardcover edge) hides while the cover carries it
+const hideLeft = on => { hL.style.visibility = on && wide() ? 'hidden' : ''; };
+
+function pg(head, inner, folio, id){
+  return `<div class="pg"><div class="rh">${head}</div><div class="body"${id?` id="${id}" tabindex="-1"`:''}>${inner}</div><div class="folio">${folio}</div></div>`;
+}
+
+function render(v){
+  const b = BOOKS[R.book], n = R.pages[keyOf(v)];
+  const rhL = `<span>${esc(b.name)}</span><span>${esc(b.years)}</span>`;
+  if(v.type==='index'){
+    const L = b.about ? aboutHTML(b.about) : `<h2 class="big" id="rd-title">Hi, I'm Sanyam.</h2>
+      <p>I write the stuff people screenshot and send to the group chat: satire, memes, brand voices that sound like a person, and newsletters people finish.</p>
+      <p>6 years, 4 places, roughly 9,000 posts. My method: find the joke the audience is already making, then write the version the brand is allowed to post.</p>
+      <p>Strategy is the half you don't see. Every piece in these books comes with the brief, the bet I made, and the numbers it did.</p>
+      <div class="thisbook"><p><b>This book: ${esc(b.name)}, ${esc(b.years)}.</b> ${esc(b.role)}.</p><p>${esc(b.intro)}</p></div>
+      <span class="demo">Demo copy. Swap in yours.</span>`;
+    return [pg(rhL, L, n, 'focus-me'), pg(`<span>Index</span><span>${esc(b.name)}</span>`, indexHTML(b,null), n+1)];
+  }
+  const sec = b.sections[v.t], s = sec.subs[v.s];
+  const rhR = `<span>${esc(sec.title)}</span><span>${esc(s.name)}</span>`;
+  if(v.type==='sub'){
+    const L = `<h2 id="focus-me" tabindex="-1">${esc(s.name)}</h2>${s.body.map(p=>`<p>${esc(p)}</p>`).join('')}`;
+    const initials = s.name.split(/\s+/).filter(w=>/^[A-Za-z]/.test(w)).slice(0,2).map(w=>w[0]).join('');
+    const art = s.img ? `<img src="${esc(s.img)}" alt="${esc(s.name)}">`
+      : (sec.title==='Brands' ? `<span class="mono">${esc(initials)}</span>` : face(['smug','shock','tired'][v.s%3])) + `<span class="ph-l">Photo slot</span>`;
+    const P = `<div class="photo"><figure class="polaroid" style="--tilt:${['1.5deg','-1.8deg','.8deg'][v.s%3]}"><div class="ph">${art}</div><figcaption>${esc(s.cap||s.name)}</figcaption></figure></div>`;
+    return [pg(rhL, L, n), pg(rhR, P, n+1)];
+  }
+  if(v.type==='work'){
+    const L = `<h2 id="focus-me" tabindex="-1">${esc(s.name)}</h2><p>${esc(s.intro)}</p>
+      ${s.pieces.length ? `<p class="hint">${s.pieces.length} pieces on the next page. Click one to see the piece, how I thought about it, and the numbers.</p>` : ''}`;
+    const C = !s.pieces.length ? `<p class="hint">the pieces go here.</p>` : `<div class="cubes">${s.pieces.map((p,i)=>`<button class="cube" type="button" style="--tilt:${tilts[(i+v.s)%tilts.length]}" data-act="piece" data-t="${v.t}" data-s="${v.s}" data-p="${i}">
+        <div class="thumb" aria-hidden="true">${fmtHTML(p,true)}</div><div class="cap"><h3>${esc(p.title)}</h3><p>${esc(p.blurb)}</p></div></button>`).join('')}</div>`;
+    return [pg(rhL, L, n), pg(rhR, C, n+1)];
+  }
+  const p = s.pieces[v.p];
+  const L = `<h2 id="focus-me" tabindex="-1">${esc(p.title)}</h2><p class="where">${esc(p.where)}</p>${fmtHTML(p,false)}`;
+  const nxt = s.pieces[v.p+1];
+  const Rh = `<h2>How I thought about it</h2><dl class="notes">${p.thought.map(([a,b2])=>`<dt>${esc(a)}</dt><dd>${esc(b2)}</dd>`).join('')}</dl>
+    <h2>The numbers</h2><div class="stats">${p.stats.map(([a,b2],i)=>`<div class="stat" style="--tilt:${tilts[i+1]}"><b>${esc(a)}</b><span>${esc(b2)}</span></div>`).join('')}</div>
+    ${nxt?`<button class="btn next" type="button" data-act="next" data-t="${v.t}" data-s="${v.s}" data-p="${v.p+1}">Next piece: ${esc(nxt.title)}</button>`:''}`;
+  return [pg(rhL, L, n), pg(rhR, Rh, n+1)];
+}
+
+function aboutHTML(a){
+  return `<h2 class="big" id="rd-title">${esc(a.title)}</h2>`
+    + a.paras.map(lines=>`<p>${lines.map(esc).join('<br>')}</p>`).join('')
+    + `<div class="thisbook"><p><b>${esc(a.box[0])}</b></p>${a.box.slice(1).map(l=>`<p>${esc(l)}</p>`).join('')}</div>`;
+}
+function indexHTML(b, act){
+  return `<h2>Index</h2><ol class="idx">${b.sections.map((sec,t)=>{
+    const o = R.open.has(t);
+    return `<li class="it${o?' open':''}"><button class="it-btn" type="button" data-act="toggle" data-t="${t}" aria-expanded="${o}">
+      <span>${esc(sec.title)}</span><span class="ct">${sec.subs.length}</span><span class="chev" aria-hidden="true"></span></button>
+      <div class="subs"><ul>${sec.subs.map((s,i)=>{
+        const k = sec.work?`work:${t}:${i}`:`sub:${t}:${i}`;
+        return `<li><button class="sub-btn${act&&act.t===t&&act.s===i?' on':''}" type="button" ${o?'':'tabindex="-1"'} data-act="${sec.work?'work':'sub'}" data-t="${t}" data-s="${i}">
+          <span>${esc(s.name)}</span><span class="lead"></span><span class="pn">${R.pages[k]}</span></button></li>`;}).join('')}</ul></div></li>`;
+  }).join('')}</ol>`;
+}
+
+function paint(L, Rh){ pL.innerHTML = L; pR.innerHTML = Rh; pL.scrollTop = pR.scrollTop = spread.scrollTop = 0; }
+function focusPage(){ const f = pL.querySelector('#focus-me'); if(f) f.focus({preventScroll:true}); }
+
+function turn(L, Rh, fwd){
+  if(reduce){ paint(L,Rh); focusPage(); return; }
+  R.busy = true;
+  if(wide()){
+    const leaf = document.createElement('div');
+    leaf.className = 'leaf ' + (fwd?'fwd':'bwd');
+    const front = fwd ? pR.innerHTML : pL.innerHTML;
+    leaf.innerHTML = `<div class="page ${fwd?'right':'left'} face">${front}</div><div class="page ${fwd?'left':'right'} face back">${fwd?L:Rh}</div>`;
+    spread.appendChild(leaf);
+    if(fwd){ pR.innerHTML = Rh; pR.scrollTop = 0; } else { pL.innerHTML = L; pL.scrollTop = 0; }
+    playTurn(.85);
+    const a = leaf.animate([{transform:'rotateY(0deg)'},{transform:`rotateY(${fwd?-180:180}deg)`}],{duration:850,easing:'cubic-bezier(.45,.05,.3,1)'});
+    a.onfinish = () => { if(fwd){ pL.innerHTML = L; pL.scrollTop = 0; } else { pR.innerHTML = Rh; pR.scrollTop = 0; } leaf.remove(); R.busy = false; focusPage(); };
+  } else {
+    spread.style.transformOrigin = 'left center';
+    playTurn(.5);
+    const a = spread.animate([{transform:'rotateY(0deg)'},{transform:`rotateY(${fwd?-90:90}deg)`}],{duration:240,easing:'ease-in'});
+    a.onfinish = () => { paint(L,Rh);
+      const b = spread.animate([{transform:`rotateY(${fwd?90:-90}deg)`},{transform:'rotateY(0deg)'}],{duration:260,easing:'ease-out'});
+      b.onfinish = () => { R.busy = false; focusPage(); }; };
+  }
+}
+
+function go(v, mode){
+  if(R.busy) return;
+  const fwd = mode==='push' || mode==='replace';
+  if(mode==='push') R.stack.push(v);
+  else if(mode==='replace') R.stack[R.stack.length-1] = v;
+  else if(mode==='back') R.stack.pop();
+  else if(mode==='root') R.stack = [{type:'index'}];
+  const [L,Rh] = render(R.stack[R.stack.length-1]);
+  turn(L, Rh, fwd);
+  bar();
+}
+function bar(){
+  $('#b-back').disabled = R.stack.length < 2;
+  $('#b-index').disabled = R.stack.length===1 && R.stack[0].type==='index';
+}
+
+function openBook(i, opener){
+  if(!reader.hidden) return;
+  const b = BOOKS[i];
+  audio();
+  R.book = i; R.stack = [{type:'index'}]; R.open = new Set([2]); R.pages = pageMap(b); R.opener = opener;
+  reader.style.setProperty('--bk', `var(--${b.color})`);
+  reader.style.setProperty('--mis', b.mis);
+  const [L,Rh] = render(R.stack[0]);
+  paint(L,Rh); bar();
+  reader.style.setProperty('--band', b.band);
+  cvF.innerHTML = `<div class="cvb"></div><div class="cvt">${esc(b.name)}</div><div class="cvs">${esc(b.years)}<br>${esc(b.role)}${b.tagline?`<span class="cvtag">${esc(b.tagline)}</span>`:''}</div><div class="cvb"></div>`;
+  cvB.innerHTML = `<div class="half l"><div class="page left">${L}</div></div>`;
+  cover.classList.remove('gone');
+  // jump straight to the closed state without animating
+  book3d.style.transition = 'none'; book3d.classList.add('closed'); book3d.classList.remove('open');
+  reader.classList.add('fade'); reader.hidden = false; void book3d.offsetWidth; book3d.style.transition = '';
+  hideLeft(true);
+  R.busy = true;
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{
+    reader.classList.remove('fade');
+    // hold on the front cover so the title can be read, then swing it open (a click on the cover skips the wait)
+    R.hold = setTimeout(swingOpen, reduce?0:1400);
+  }));
+}
+function swingOpen(){
+  if(!R.hold) return;
+  clearTimeout(R.hold); R.hold = null;
+  playTurn(.9, 'cover');
+  book3d.classList.remove('closed'); book3d.classList.add('open');
+  setTimeout(()=>{ cover.classList.add('gone'); hideLeft(false); R.busy = false; $('#b-close').focus({preventScroll:true}); }, reduce?0:950);
+}
+cvF.addEventListener('click', swingOpen);
+
+function closeBook(){
+  if(reader.hidden) return;
+  if(R.hold){ clearTimeout(R.hold); R.hold = null; R.busy = false; }
+  if(R.busy) return;
+  R.busy = true;
+  cvB.innerHTML = `<div class="half l"><div class="page left">${pL.innerHTML}</div></div>`;
+  cover.classList.remove('gone'); hideLeft(true);
+  requestAnimationFrame(()=>{
+    playSlam(.33);
+    book3d.classList.add('slam');
+    book3d.classList.remove('open'); book3d.classList.add('closed');
+    setTimeout(()=>reader.classList.add('fade'), reduce?0:620);
+    setTimeout(()=>{ reader.hidden = true; hideLeft(false); book3d.classList.remove('slam'); R.busy = false; if(R.opener) R.opener.focus({preventScroll:true}); }, reduce?0:900);
+  });
+}
+
+spread.addEventListener('click', e=>{
+  const el = e.target.closest('[data-act]'); if(!el || R.busy) return;
+  const t = +el.dataset.t, s = +el.dataset.s, p = +el.dataset.p;
+  const cur = R.stack[R.stack.length-1];
+  switch(el.dataset.act){
+    case 'toggle': {
+      const li = el.parentElement, open = !li.classList.contains('open');
+      li.classList.toggle('open', open); el.setAttribute('aria-expanded', open);
+      open ? R.open.add(t) : R.open.delete(t);
+      li.querySelectorAll('.sub-btn').forEach(b=>open?b.removeAttribute('tabindex'):b.setAttribute('tabindex','-1'));
+      break; }
+    case 'sub':   go({type:'sub',t,s}, cur.type==='sub'?'replace':'push'); break;
+    case 'work':  go({type:'work',t,s}, 'push'); break;
+    case 'piece': go({type:'piece',t,s,p}, 'push'); break;
+    case 'next':  go({type:'piece',t,s,p}, 'replace'); break;
+  }
+});
+$('#b-back').onclick = ()=>go(null,'back');
+$('#b-index').onclick = ()=>go(null,'root');
+$('#b-close').onclick = closeBook;
+document.addEventListener('keydown', e=>{
+  if(reader.hidden) return;
+  if(e.key==='Escape') closeBook();
+  if(e.key==='ArrowLeft' && R.stack.length>1 && !e.target.closest('input,textarea')) go(null,'back');
+});
+
+/* ================= KEYBOARD WARRIOR WALL ================= */
+// Placeholder comments. To use real screenshots, replace an entry with { img:`comments/01.png` }.
+const COMMENTS = [
+ { post:`waking up at 4 am to journal, ice bath and close 3 deals`, text:`I also wake up at 4 am. Then I go back to sleep. Consistency is key.`, ago:`2d`, likes:214 },
+ { post:`"we're a family here"`, text:`Great, can the family share the WiFi password`, ago:`5d`, likes:388 },
+ { post:`hiring for an entry-level role, 5 years of experience required`, text:`Applying with 5 years of experience in being entry level.`, ago:`1w`, likes:902 },
+ { post:`what my 2-year-old taught me about B2B sales`, text:`Waiting for part 2: what my goldfish taught me about churn.`, ago:`1w`, likes:1240 },
+ { post:`a 900-word post that ends with "Agree?"`, text:`Agree. (I did not read it.)`, ago:`2w`, likes:96 },
+ { post:`rejecting a candidate who didn't thank the receptionist`, text:`The receptionist read this post and has also rejected you.`, ago:`2w`, likes:3105 },
+ { post:`"excited to announce I've started a new position"`, text:`Congrats! Is the new position horizontal? Asking for my back.`, ago:`3w`, likes:157 },
+ { post:`AI will replace writers by next year`, text:`Wrote this comment myself. Took 4 minutes and 2 snacks.`, ago:`3w`, likes:640 },
+ { post:`the 5 am hustle club`, text:`My hustle is finding the meeting link 3 minutes late.`, ago:`1mo`, likes:271 },
+ { post:`unpopular opinion: Monday is the best day of the week`, text:`Popular opinion: no.`, ago:`1mo`, likes:1880 },
+ { post:`my top 10 productivity tools`, text:`Tool 11: closing LinkedIn. Doing it right after this comment.`, ago:`1mo`, likes:342 },
+ { post:`personal branding 101`, text:`My personal brand is replying to everything at 1 am.`, ago:`1mo`, likes:118 },
+ { post:`a CEO crying in his car after layoffs`, text:`Did the car get a promotion after this`, ago:`2mo`, likes:2210 },
+ { post:`"data is the new oil"`, text:`As a data science student: please stop putting data in your car.`, ago:`2mo`, likes:733 },
+ { post:`one skill every marketer needs`, text:`Pretending to understand the attribution dashboard.`, ago:`2mo`, likes:489 },
+ { post:`thrilled to be featured in a top 50 voices list`, text:`Thrilled to have scrolled past it 50 times.`, ago:`3mo`, likes:205 },
+ { post:`comment "interested" and I'll DM you the PDF`, text:`interested in why it needs a comment`, ago:`3mo`, likes:1012 },
+ { post:`"Gen Z doesn't want to work"`, text:`Gen Z here. Typed this from the office. At 7 pm. On a Friday.`, ago:`3mo`, likes:2967 },
+ { post:`I took a pay cut to follow my passion`, text:`I took a nap to follow mine.`, ago:`4mo`, likes:574 },
+ { post:`leadership lessons from a mango tree`, text:`The mango tree has shown more leadership than my last group project.`, ago:`4mo`, likes:388 },
+];
+const wall=$('#wall'), grid=$('#wallGrid'), zoom=$('#zoom'), zoomIn=$('#zoomIn'), kw=$('#kw');
+const cmHTML = c => c.img
+  ? `<img src="${esc(c.img)}" alt="A LinkedIn comment by Sanyam" loading="lazy">`
+  : `<div class="cm"><div class="on">Sanyam commented on a post about ${esc(c.post)}</div>
+      <div class="who"><div class="av" aria-hidden="true">S</div><div><div class="nm">Sanyam</div><div class="rl">Content writer and strategist</div></div><span class="tm">${esc(c.ago)}</span></div>
+      <div class="tx">${esc(c.text)}</div><div class="ft"><span>Like</span><span>Reply</span><span>${c.likes.toLocaleString('en-IN')} likes</span></div></div>`;
+function openWall(){
+  grid.innerHTML = COMMENTS.map((c,i)=>`<button type="button" class="pin" data-i="${i}" aria-label="Open comment ${i+1} of ${COMMENTS.length}"
+    style="--r:${(((i*37)%9)-4)*.55}deg;--d:${Math.min(i,12)*40}ms">${cmHTML(c)}</button>`).join('');
+  wall.hidden = false; wall.scrollTop = 0; $('#w-close').focus({preventScroll:true});
+}
+function closeWall(){ zoom.hidden = true; wall.hidden = true; kw.focus({preventScroll:true}); }
+kw.addEventListener('pointerdown', e=>e.stopPropagation());
+kw.addEventListener('click', ()=>{ playClick(); openWall(); });
+$('#w-close').addEventListener('click', closeWall);
+grid.addEventListener('click', e=>{ const b = e.target.closest('.pin'); if(!b) return; zoomIn.innerHTML = cmHTML(COMMENTS[+b.dataset.i]); zoom.hidden = false; zoom.focus?.(); });
+zoom.addEventListener('click', ()=>{ zoom.hidden = true; });
+document.addEventListener('keydown', e=>{
+  if(wall.hidden || e.key!=='Escape') return;
+  e.stopImmediatePropagation();
+  if(!zoom.hidden) zoom.hidden = true; else closeWall();
+}, true);
+
+/* ================= THE BALL: glow, voice, contact ================= */
+// Profile links: paste the full URLs here and the words become links.
+const LINKS = { linkedin:``, instagram:`` };
+// Voice files: once Sanyam's recordings exist, put their paths here (e.g. `voice/nag.mp3`).
+// Until then the browser's own speech stands in.
+const VOICE = { nag:``, hire:`` };
+const NAG_AFTER = 45000, NAG_EVERY = 5000;
+
+[['lnk-li','linkedin'],['lnk-ig','instagram']].forEach(([id,k])=>{
+  if(!LINKS[k]) return;
+  const old = document.getElementById(id), a = document.createElement('a');
+  a.href = LINKS[k]; a.target = '_blank'; a.rel = 'noopener'; a.textContent = old.textContent; old.replaceWith(a);
+});
+document.querySelectorAll('#lnk-li,#lnk-ig').forEach(el=>el.classList.add('lk'));
+
+const B = { opened:false, glowing:false, nagTimer:null, gestured:false, seen:0, lastTick:performance.now(), busy:false, hireTimer:null };
+const ballThing = () => things.find(t=>t.ball);
+
+// --- speech (placeholder voice) ---
+function pickVoice(langs){
+  const vs = window.speechSynthesis ? speechSynthesis.getVoices() : [];
+  for(const l of langs){ const v = vs.find(v=>v.lang && v.lang.toLowerCase().startsWith(l)); if(v) return v; }
+  return null;
+}
+function speak(text, {volume=.3, rate=.8, pitch=.6, hindi=false}={}){
+  if(!window.speechSynthesis) return;
+  const u = new SpeechSynthesisUtterance(text);
+  const v = hindi ? pickVoice(['hi','en-in']) : pickVoice(['en-in','en-gb','en']);
+  if(v){ u.voice = v; u.lang = v.lang; }
+  u.volume = volume; u.rate = rate; u.pitch = pitch;
+  speechSynthesis.speak(u);
+}
+// --- recorded voice files, when provided ---
+const fileBuf = {};
+async function loadVoice(k){
+  if(!VOICE[k] || fileBuf[k] || !Snd.ctx) return fileBuf[k];
+  try{ const r = await fetch(VOICE[k]); fileBuf[k] = await Snd.ctx.decodeAudioData(await r.arrayBuffer()); }catch(_){}
+  return fileBuf[k];
+}
+function voiceCtx(){ // voice ignores reduced-motion, but respects the sound toggle
+  if(!Snd.on) return null;
+  if(!Snd.ctx){ const C = window.AudioContext || window.webkitAudioContext; if(!C) return null; Snd.ctx = new C(); }
+  if(Snd.ctx.state === 'suspended') Snd.ctx.resume();
+  return Snd.ctx;
+}
+async function playFile(k, echo){
+  const ctx = voiceCtx(); const buf = ctx && await loadVoice(k); if(!buf) return false;
+  const src = ctx.createBufferSource(); src.buffer = buf;
+  const g = ctx.createGain(); g.gain.value = .9; src.connect(g); g.connect(ctx.destination);
+  if(echo){ // fading echo: delay with feedback, wet level dying away
+    const d = ctx.createDelay(1); d.delayTime.value = .3; const fb = ctx.createGain(); fb.gain.value = .45;
+    const wet = ctx.createGain(); const now = ctx.currentTime;
+    wet.gain.setValueAtTime(.6, now); wet.gain.exponentialRampToValueAtTime(.001, now + buf.duration + 2.2);
+    g.connect(d); d.connect(fb); fb.connect(d); d.connect(wet); wet.connect(ctx.destination);
+  }
+  src.start(); return true;
+}
+
+function sayNag(){
+  if(document.hidden || B.opened || !Snd.on) return;
+  playFile('nag').then(ok=>{ if(!ok) speak(pickVoice(['hi']) ? 'बेरोज़गारी हटाओ, मुझे फ़ोन मिलाओ' : 'Berozgari hatao, mujhe phone milao', {volume:.28, rate:.78, pitch:.55, hindi:true}); });
+}
+function sayHire(){
+  if(!Snd.on) return;
+  playFile('hire', true).then(ok=>{
+    if(ok) return;
+    // stand-in echo: the same words, quieter and quicker each time
+    speak('Hire me', {volume:.55, rate:.85, pitch:.7});
+    speak('hire me', {volume:.25, rate:1, pitch:.65});
+    speak('me', {volume:.1, rate:1.1, pitch:.6});
+  });
+}
+function startNag(){
+  if(B.nagTimer || B.opened) return;
+  sayNag(); B.nagTimer = setInterval(sayNag, NAG_EVERY);
+}
+function stopNag(){
+  clearInterval(B.nagTimer); B.nagTimer = null;
+  if(window.speechSynthesis) speechSynthesis.cancel();
+}
+// browsers allow sound only after the visitor has clicked/tapped/typed once
+['pointerdown','keydown'].forEach(ev=>window.addEventListener(ev, ()=>{
+  if(B.gestured) return; B.gestured = true;
+  if(window.speechSynthesis) speechSynthesis.getVoices();
+  if(B.glowing) setTimeout(()=>{ if(B.glowing && !B.opened) startNag(); }, 350);
+}, true));
+// count only time the tab is visible; at 45 s the ball starts to glow and whisper
+setInterval(()=>{
+  const now = performance.now();
+  if(!document.hidden) B.seen += now - B.lastTick;
+  B.lastTick = now;
+  if(!B.glowing && !B.opened && B.seen >= NAG_AFTER){
+    const t = ballThing(); if(!t) return;
+    B.glowing = true; t.el.classList.add('glow');
+    if(B.gestured) startNag();
+  }
+}, 500);
+
+// --- opening the ball ---
+const capsule = $('#capsule'), contact = $('#contact');
+function openBall(t){
+  if(B.busy || !contact.hidden) return;
+  B.busy = true; B.opened = true; stopNag(); clearTimeout(B.hireTimer);
+  B.glowing = false; t.el.classList.remove('glow');
+  Body.setStatic(t.body, true);
+  const r = t.el.getBoundingClientRect(), cx = r.left + r.width/2, cy = r.top + r.height/2;
+  t.el.style.visibility = 'hidden';
+  capsule.hidden = false; capsule.classList.remove('open');
+  const lift = Math.min(70, cy - 60), S = 2.2;
+  B.at = {cx, cy, lift, S};
+  const from = `translate(${cx-22}px,${cy-22}px) rotate(${t.body.angle}rad)`, to = `translate(${cx-22}px,${cy-22-lift}px) scale(${S})`;
+  capsule.style.transform = to;
+  const a = reduce ? null : capsule.animate([{transform:from},{transform:to}],{duration:300,easing:'cubic-bezier(.3,1.4,.5,1)'});
+  const pop = () => {
+    capsule.classList.add('open');
+    // card pops out of the ball and lands above it (or below if there's no room)
+    contact.hidden = false;
+    const cw = contact.offsetWidth, ch = contact.offsetHeight, vw = innerWidth, vh = innerHeight;
+    const bx = cx, by = cy - lift, ballTop = by - 22*S, ballBot = by + 22*S;
+    let x = Math.min(Math.max(bx - cw/2, 16), vw - cw - 16);
+    let y = ballTop - 22*S - 18 - ch; if(y < 16) y = Math.min(ballBot + 26, vh - ch - 16);
+    contact.style.transform = `translate(${x}px,${y}px)`;
+    if(!reduce) contact.animate([{transform:`translate(${bx - cw/2}px,${by - ch/2}px) scale(.08)`,opacity:0},{transform:`translate(${x}px,${y}px) scale(1.04)`,opacity:1,offset:.75},{transform:`translate(${x}px,${y}px)`}],{duration:520,easing:'cubic-bezier(.2,.9,.3,1)'});
+    B.cardAt = {x, y, bx, by, cw, ch};
+    $('#c-close').focus({preventScroll:true});
+    B.busy = false;
+  };
+  a ? a.onfinish = () => setTimeout(pop, 120) : pop();
+}
+function closeBall(){
+  if(B.busy || contact.hidden) return;
+  B.busy = true;
+  const t = ballThing(), {x, y, bx, by, cw, ch} = B.cardAt, {cx, cy, lift, S} = B.at;
+  const end = () => {
+    contact.hidden = true; capsule.classList.remove('open');
+    const back = () => {
+      capsule.hidden = true; t.el.style.visibility = '';
+      Body.setStatic(t.body, false); Body.setVelocity(t.body, {x:0, y:-2});
+      B.busy = false;
+      B.hireTimer = setTimeout(sayHire, 4000);
+    };
+    if(reduce) return back();
+    setTimeout(()=>{
+      const a = capsule.animate([{transform:`translate(${cx-22}px,${cy-22-lift}px) scale(${S})`},{transform:`translate(${cx-22}px,${cy-22}px)`}],{duration:260,easing:'ease-in'});
+      a.onfinish = back;
+    }, 260);
+  };
+  if(reduce) return end();
+  const a = contact.animate([{transform:`translate(${x}px,${y}px)`,opacity:1},{transform:`translate(${bx - cw/2}px,${by - ch/2}px) scale(.08)`,opacity:0}],{duration:300,easing:'cubic-bezier(.6,0,.9,.5)'});
+  a.onfinish = end;
+}
+$('#c-close').addEventListener('click', closeBall);
+contact.addEventListener('click', async e=>{
+  const b = e.target.closest('.cp'); if(!b) return;
+  try{ await navigator.clipboard.writeText(b.dataset.copy); b.textContent = 'Copied'; }
+  catch(_){ const v = b.previousElementSibling, rg = document.createRange(); rg.selectNodeContents(v); const sel = getSelection(); sel.removeAllRanges(); sel.addRange(rg); b.textContent = 'Selected'; }
+  setTimeout(()=>{ b.textContent = 'Copy'; }, 1600);
+});
+document.addEventListener('keydown', e=>{ if(e.key==='Escape' && !contact.hidden) closeBall(); });
+
+/* ================= THE SHELF (physics) ================= */
+const { Engine, Runner, Bodies, Body, Composite, Mouse, MouseConstraint, Events, Query } = Matter;
+const stage = $('#stage'), hdr = $('#hdr');
+const engine = Engine.create(); engine.gravity.y = 1.15;
+const things = []; const shelves = []; let walls = [];
+const FLOOR = 18;
+
+function addThing(el, body, w, h, extra){ stage.appendChild(el); el.style.width = w+'px'; el.style.height = h+'px'; things.push(Object.assign({el, body, w, h}, extra)); Composite.add(engine.world, body); return body; }
+let curBookH = 0;
+
+function geom(){
+  const vw = stage.clientWidth, vh = stage.clientHeight;
+  const top = hdr.getBoundingClientRect().bottom + 14;
+  const floorY = vh - FLOOR;
+  // books get whatever height is left under the header (top shelf can't go lower than floor - 120)
+  const bookH = Math.round(Math.max(110, Math.min(270, vh*0.32, floorY - 126 - top)));
+  const shelfW = Math.min(880, vw - 32);
+  const s1 = Math.round(Math.max(top + bookH + 6, vh*0.55));
+  // short windows: keep room for the lower shelf even if the top one rises into the header area
+  const s1c = Math.min(s1, floorY - 120);
+  const s2 = Math.round(Math.min(floorY - 26, s1c + Math.max(95, (floorY - s1c)*0.55)));
+  return { vw, vh, floorY, bookH, shelfW, s1:s1c, s2, cx: vw/2 };
+}
+
+let room = null; // last room geometry the statics were placed for
+function placeStatics(g){
+  room = g;
+  walls.forEach(w=>Composite.remove(engine.world, w));
+  const T = 400;
+  walls = [
+    Bodies.rectangle(g.vw/2, g.floorY + T/2, g.vw + 2*T, T, {isStatic:true}),
+    Bodies.rectangle(-T/2, g.vh/2, T, g.vh*3, {isStatic:true}),
+    Bodies.rectangle(g.vw + T/2, g.vh/2, T, g.vh*3, {isStatic:true}),
+    Bodies.rectangle(g.vw/2, -T/2 - 200, g.vw + 2*T, T, {isStatic:true}),
+  ];
+  Composite.add(engine.world, walls);
+  [g.s1, g.s2].forEach((y, i)=>{
+    const sh = shelves[i], H = 22;
+    Body.setPosition(sh.body, {x:g.cx, y: y + H/2});
+    sh.el.style.width = g.shelfW + 'px';
+    sh.y = y; sh.x0 = g.cx - g.shelfW/2; sh.x1 = g.cx + g.shelfW/2;
+    sh.el.style.setProperty('--base', `translate(${sh.x0}px, ${y}px)`);
+    sh.el.style.transform = `translate(${sh.x0}px, ${y}px)`;
+  });
+}
+
+function build(){
+  const g = geom();
+  for(let i=0;i<2;i++){
+    const el = document.createElement('div'); el.className = 'shelf'; stage.appendChild(el);
+    const body = Bodies.rectangle(0,0,g.shelfW,22,{isStatic:true, friction:.9, label:'shelf'});
+    // shelf body width is fixed at creation, so rebuild it at the right width
+    Composite.add(engine.world, body);
+    shelves.push({el, body, w:g.shelfW});
+  }
+  placeStatics(g);
+
+  // books stand on the top shelf
+  curBookH = g.bookH;
+  const ratios = [.30,.25,.30,.31];
+  let x = g.cx - g.shelfW/2 + 30;
+  BOOKS.forEach((b,i)=>{
+    const h = g.bookH - (i%2?10:0), w = Math.round(g.bookH*ratios[i]);
+    const el = document.createElement('button');
+    el.type = 'button'; el.className = 'thing book';
+    el.setAttribute('aria-label', `Open ${b.name}, ${b.years}`);
+    el.style.setProperty('--bk', `var(--${b.color})`); el.style.setProperty('--band', b.band); el.style.setProperty('--mis', b.mis);
+    const lines = (b.spineName || b.name).split('\n'), longest = Math.max(...lines.map(l=>l.length));
+    const fs = Math.max(11, Math.min((w-14)/(lines.length*1.05)*.85, w*.44, (h-84)/(longest*.62)));
+    el.innerHTML = `<span class="band"></span><span class="t" style="font-size:${fs}px">${lines.map(esc).join('<br>')}</span><span class="yr">${esc(b.spine).replace(/\n/g,'<br>')}</span>`;
+    el.addEventListener('click', ()=>openBook(i, el));
+    const body = Bodies.rectangle(x + w/2, g.s1 - h/2, w, h, {restitution:.3, friction:.7, frictionAir:.012, density:.0022, chamfer:{radius:4}});
+    body.bookIdx = i;
+    addThing(el, body, w, h, {book:true, fs});
+    x += w + 5;
+  });
+
+  // props
+  const free = (g.cx + g.shelfW/2 - 24) - x;
+  const sw = 170, shh = 86;
+  const sign = document.createElement('div'); sign.className = 'thing sign';
+  sign.innerHTML = `<b>i have a 5-step skincare routine</b><small>(and 15 pairs of socks)</small>`;
+  const onTop = free >= sw + 20;
+  const sx = onTop ? g.cx + g.shelfW/2 - 30 - sw/2 : g.cx - g.shelfW/2 + 30 + sw/2;
+  const sy = (onTop ? g.s1 : g.s2) - shh/2;
+  addThing(sign, Bodies.rectangle(sx, sy, sw, shh, {restitution:.25, friction:.8, density:.0016, chamfer:{radius:3}}), sw, shh);
+
+  const mug = document.createElement('div'); mug.className = 'thing mug'; mug.innerHTML = `world's<br>okayest<br>writer`;
+  const mx = g.cx + Math.min(g.shelfW/2 - 60, 140);
+  addThing(mug, Bodies.rectangle(mx, g.s2 - 28, 52, 56, {restitution:.2, friction:.8, density:.003, chamfer:{radius:4}}), 52, 56);
+
+  const ball = document.createElement('div'); ball.className = 'thing ball';
+  addThing(ball, Bodies.circle(mx - 80, g.s2 - 24, 22, {restitution:.75, friction:.4, density:.0012}), 44, 44, {ball:true});
+}
+
+// fix shelf body widths to their visual width
+function sizeShelves(){
+  const g = geom(), o = room;
+  if(!o || (o.vw===g.vw && o.vh===g.vh)) return;
+  // note what rests on each shelf (and on the floor) before anything moves
+  const oldShelf = shelves.map(sh=>({y:sh.y, x0:sh.x0, x1:sh.x1}));
+  const rest = things.map(t=>{
+    const b = t.body; if(b===drag.body) return null;
+    const bottom = b.bounds.max.y;
+    for(let i=0;i<oldShelf.length;i++){
+      const s0 = oldShelf[i];
+      if(Math.abs(bottom - s0.y) < 12 && b.position.x > s0.x0 - 6 && b.position.x < s0.x1 + 6)
+        return {i, dx:b.position.x - s0.x0, fx:(b.position.x - s0.x0)/(s0.x1 - s0.x0), dy:b.position.y - s0.y};
+    }
+    if(Math.abs(bottom - o.floorY) < 12) return {i:-1, fx:b.position.x/o.vw, dy:b.position.y - o.floorY};
+    return null;
+  });
+  shelves.forEach(sh=>{
+    if(Math.abs(sh.w - g.shelfW) > 1){ Body.scale(sh.body, g.shelfW/sh.w, 1); sh.w = g.shelfW; }
+  });
+  // resize the books when the room under the header grows or shrinks
+  const k = Math.abs(g.bookH - curBookH)/curBookH > .04 ? g.bookH/curBookH : 1;
+  if(k !== 1){
+    curBookH = g.bookH;
+    things.forEach((t,i)=>{
+      if(!t.book) return;
+      Body.scale(t.body, k, k);
+      t.w *= k; t.h *= k; t.fs *= k;
+      t.el.style.width = t.w+'px'; t.el.style.height = t.h+'px';
+      t.el.querySelector('.t').style.fontSize = t.fs+'px';
+      if(rest[i]){ rest[i].dy *= k; if(rest[i].dx!=null) rest[i].dx *= k; }
+    });
+  }
+  placeStatics(g);
+  // carry resting things along with their shelf or the floor, keeping their spot and angle
+  const target = things.map((t,k)=>{
+    const r = rest[k], b = t.body;
+    let x = b.position.x, y = b.position.y;
+    if(r){
+      if(r.i >= 0){ const sh = shelves[r.i], W = sh.x1 - sh.x0; x = sh.x0 + (r.dx <= W - 24 ? r.dx : r.fx*W); y = sh.y + r.dy; }
+      else { x = r.fx*g.vw; y = g.floorY + r.dy; }
+    }
+    return {t, r, x, y, hw:(b.bounds.max.x - b.bounds.min.x)/2};
+  });
+  // if a shelf got narrower, pack what sits on it side by side so nothing overlaps
+  const pack = i => {
+    const row = target.filter(o=>o.r && o.r.i===i).sort((a,b)=>a.x-b.x);
+    let right = -Infinity;
+    row.forEach(o=>{ o.x = Math.max(o.x, right + 4 + o.hw); right = o.x + o.hw; });
+    return {row, right};
+  };
+  // top shelf too crowded: props (not books) move down to the lower shelf
+  const top = pack(0);
+  if(top.right > shelves[0].x1){
+    top.row.filter(o=>!o.t.book).forEach(o=>{
+      const dy = o.y - shelves[0].y;
+      o.r.i = 1; o.y = shelves[1].y + dy; o.x = shelves[1].x0 + 30 + o.hw;
+    });
+    pack(0);
+  }
+  pack(1); pack(-1);
+  target.forEach(({t, r, x, y, hw})=>{
+    const b = t.body;
+    x = Math.min(Math.max(x, hw), g.vw - hw);
+    y = Math.min(y, g.floorY - (b.bounds.max.y - b.position.y));
+    Body.setPosition(b, {x,y});
+    if(r){ Body.setVelocity(b, {x:0,y:0}); Body.setAngularVelocity(b, 0); }
+  });
+}
+
+// Drag = steer the held object with velocity toward the pointer, never teleport it.
+// The solver then treats shelves as solid: a held book stops on a shelf and has to go around its end.
+engine.positionIterations = 12; engine.velocityIterations = 10;
+const DRAG_MAX = 16;
+const drag = { body:null, off:{x:0,y:0}, m:{x:0,y:0} };
+const dyn = () => things.map(t=>t.body);
+let down = null, hovered = null;
+const pt = e => ({x:e.clientX, y:e.clientY});
+stage.addEventListener('pointerdown', e=>{
+  const p = pt(e);
+  const hit = Query.point(dyn(), p)[0];
+  down = {x:e.clientX, y:e.clientY, t:performance.now(), body:hit};
+  if(hit){
+    const a = -hit.angle, dx = p.x - hit.position.x, dy = p.y - hit.position.y;
+    drag.body = hit; drag.m = p;
+    drag.off = {x: dx*Math.cos(a) - dy*Math.sin(a), y: dx*Math.sin(a) + dy*Math.cos(a)};
+    try{ stage.setPointerCapture(e.pointerId); }catch(_){}
+  } else { const sh = shelves.find(s=>Query.point([s.body], p).length); if(sh) wobble(sh, 7); }
+});
+function release(e){
+  if(down && down.body && down.body.bookIdx!=null && e.type==='pointerup'){
+    const d = Math.hypot(e.clientX-down.x, e.clientY-down.y), dt = performance.now()-down.t;
+    if(d < 8 && dt < 450){ const t = things.find(t=>t.body===down.body); openBook(down.body.bookIdx, t.el); }
+  }
+  if(down && down.body && e.type==='pointerup'){
+    const t = things.find(t=>t.body===down.body);
+    const d = Math.hypot(e.clientX-down.x, e.clientY-down.y), dt = performance.now()-down.t;
+    if(t && t.ball && d < 6 && dt < 350){ down = null; drag.body = null; openBall(t); return; }
+  }
+  down = null; drag.body = null;
+}
+stage.addEventListener('pointerup', release);
+stage.addEventListener('pointercancel', release);
+stage.addEventListener('pointermove', e=>{
+  if(drag.body) drag.m = pt(e);
+  if(e.pointerType!=='mouse') return;
+  const p = pt(e), hit = Query.point(dyn(), p)[0] || null;
+  if(hit!==hovered){
+    if(hovered){ const t = things.find(t=>t.body===hovered); t.el.classList.remove('hov'); }
+    hovered = hit;
+    if(hit && hit.bookIdx!=null){ const t = things.find(t=>t.body===hit); t.el.classList.add('hov'); }
+  }
+  stage.style.cursor = drag.body ? 'grabbing' : hit ? (hit.bookIdx!=null ? 'pointer' : 'grab') : (shelves.some(s=>Query.point([s.body],p).length) ? 'pointer' : 'default');
+});
+
+// shelves wobble on impact and jostle whatever sits on them
+let lastWob = 0;
+function wobble(sh, power){
+  const now = performance.now(); if(now - lastWob < 120) return; lastWob = now;
+  if(!reduce){ sh.el.classList.remove('wob'); void sh.el.offsetWidth; sh.el.classList.add('wob'); }
+  things.forEach(t=>{
+    const b = t.body, bottom = b.bounds.max.y;
+    if(Math.abs(bottom - sh.y) < 8 && b.position.x > sh.x0 && b.position.x < sh.x1 && b !== drag.body){
+      Body.setVelocity(b, {x: b.velocity.x + (Math.random()-.5)*power*.25, y: -Math.min(power*.35, 4.5)});
+      Body.setAngularVelocity(b, (Math.random()-.5)*.02*power);
+    }
+  });
+}
+Events.on(engine, 'collisionStart', e=>{
+  e.pairs.forEach(({bodyA, bodyB})=>{
+    const sb = bodyA.label==='shelf' ? bodyA : bodyB.label==='shelf' ? bodyB : null;
+    if(!sb) return;
+    const other = sb===bodyA ? bodyB : bodyA;
+    if(other.speed > 4.5){ const sh = shelves.find(s=>s.body===sb); wobble(sh, other.speed); }
+  });
+});
+
+Events.on(engine, 'beforeUpdate', ()=>{
+  const b = drag.body;
+  if(b){
+    const c = Math.cos(b.angle), s = Math.sin(b.angle);
+    const gx = b.position.x + drag.off.x*c - drag.off.y*s, gy = b.position.y + drag.off.x*s + drag.off.y*c;
+    let vx = (drag.m.x - gx)*.3, vy = (drag.m.y - gy)*.3;
+    const sp = Math.hypot(vx, vy); if(sp > DRAG_MAX){ vx *= DRAG_MAX/sp; vy *= DRAG_MAX/sp; }
+    Body.setVelocity(b, {x:vx, y:vy});
+    // held off-centre, the book swings to hang below your grip
+    Body.setAngularVelocity(b, (b.angularVelocity + (b.position.x - gx)*.00035)*.9);
+  }
+  things.forEach(({body:o})=>{
+    const v = o.velocity, sp = Math.hypot(v.x, v.y);
+    if(sp > 26) Body.setVelocity(o, {x:v.x*26/sp, y:v.y*26/sp});
+  });
+});
+Events.on(engine, 'afterUpdate', ()=>{
+  things.forEach(({el, body, w, h})=>{
+    el.style.transform = `translate(${body.position.x - w/2}px, ${body.position.y - h/2}px) rotate(${body.angle}rad)`;
+  });
+});
+// wait for fonts so the header height is final before placing the shelves
+Promise.race([document.fonts ? document.fonts.ready : Promise.resolve(), new Promise(r=>setTimeout(r,1500))])
+  .then(()=>{
+    build();
+    // fixed 120 Hz steps: small steps keep fast books from passing through a shelf
+    const STEP = 1000/120; let acc = 0, last = performance.now();
+    (function tick(now){
+      acc += Math.min(now - last, 50); last = now;
+      let n = 0; while(acc >= STEP && n < 6){ Engine.update(engine, STEP); acc -= STEP; n++; }
+      requestAnimationFrame(tick);
+    })(last);
+  });
+
+let rz; window.addEventListener('resize', ()=>{ clearTimeout(rz); rz = setTimeout(sizeShelves, 120); });
+</script>
+</body>
+</html>
